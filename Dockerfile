@@ -18,7 +18,8 @@ RUN composer install \
 
 COPY . .
 
-RUN composer dump-autoload --optimize --classmap-authoritative
+# Do not run artisan during build (no APP_KEY / .env yet — hangs on package:discover).
+RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts
 
 # ------------------------------------------------------------------------------
 # Stage 2: Frontend assets (Vite + Flux)

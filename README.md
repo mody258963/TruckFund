@@ -80,8 +80,12 @@ The repo includes a multi-stage `Dockerfile` (Composer + Vite build, then Nginx 
 |--------|--------|
 | Build type | Dockerfile |
 | Dockerfile path | `Dockerfile` |
+| Docker context | `.` |
+| Build stage | `production` |
 | Port | `80` |
 | Health check | `GET /up` |
+
+If the build appears stuck at `package:discover`, pull the latest `Dockerfile` (Composer uses `--no-scripts` at build time; discovery runs on container start).
 
 ### Required environment variables
 
