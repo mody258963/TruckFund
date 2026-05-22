@@ -110,8 +110,32 @@ Common mistakes:
 
 If the app starts without `APP_KEY`, check container logs — the entrypoint prints a generated key once; paste that value into Dokploy Environment.
 
+**Full Dokploy Environment (copy and fill values):**
+
 ```
+APP_NAME=TruckFund
 APP_URL=https://your-domain.com
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:...
+
+DB_CONNECTION=mysql
+DB_HOST=<RAILWAY_TCP_PROXY_DOMAIN>
+DB_PORT=<RAILWAY_TCP_PROXY_PORT>
+DB_DATABASE=truckfund
+DB_USERNAME=root
+DB_PASSWORD=<MYSQL_ROOT_PASSWORD>
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+LOG_CHANNEL=stderr
+RUN_MIGRATIONS=true
+```
+
+**Error: `readonly database` + `Connection: sqlite`** — Laravel is using SQLite because `DB_CONNECTION` is missing in Dokploy. Set `DB_CONNECTION=mysql` and Railway public host/port, then redeploy. Do not use `mysql.railway.internal`.
+
+```
 APP_ENV=production
 APP_DEBUG=false
 

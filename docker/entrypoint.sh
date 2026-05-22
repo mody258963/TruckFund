@@ -26,23 +26,37 @@ resolve_app_key() {
 
     echo "=========================================="
     echo "WARNING: APP_KEY is missing in Dokploy."
-    echo "A key was generated and saved for this volume."
-    echo "Add this to Dokploy → Environment:"
-    echo ""
+    echo "Add to Dokploy Environment:"
     echo "APP_KEY=$APP_KEY"
     echo "=========================================="
 }
 
 resolve_app_key
 
-mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R ug+rwx storage bootstrap/cache
+# Laravel defaults to sqlite when DB_CONNECTION is unset — causes readonly DB errors in Docker.
+if [ "${APP_ENV:-production}" = "production" ] && [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
+    echo "ERROR: DB_CONNECTION is sqlite (or unset)."
+    echo "Set these in Dokploy Environment (use Railway PUBLIC TCP host/port):"
+    echo "  DB_CONNECTION=mysql"
+    echo "  DB_HOST=<RAILWAY_TCP_PROXY_DOMAIN>"
+    echo "  DB_PORT=<RAILWAY_TCP_PROXY_PORT>"
+    echo "  DB_DATABASE=truckfund"
+    echo "  DB_USERNAME=root"
+    echo "  DB_PASSWORD=<MYSQL_ROOT_PASSWORD>"
+    exit 1
+fi
+
+mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app database
+chown -R www-data:www-data storage bootstrap/cache database
+chmod -R ug+rwx storage bootstrap/cache database
+
+rm -f /var/www/html/database/database.sqlite 2>/dev/null || true
 
 php artisan storage:link --force 2>/dev/null || true
 
 php artisan package:discover --ansi
 
+php artisan config:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
