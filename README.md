@@ -69,3 +69,58 @@ php artisan test
 ## Document storage
 
 Private uploads use the `documents` disk (`storage/app/documents`).
+
+## Deploy with Dokploy (Docker)
+
+The repo includes a multi-stage `Dockerfile` (Composer + Vite build, then Nginx + PHP 8.3-FPM).
+
+### Dokploy settings
+
+| Setting | Value |
+|--------|--------|
+| Build type | Dockerfile |
+| Dockerfile path | `Dockerfile` |
+| Port | `80` |
+| Health check | `GET /up` |
+
+### Required environment variables
+
+Set these in Dokploy (not in the image):
+
+```
+APP_KEY=base64:...          # php artisan key:generate --show
+APP_URL=https://your-domain.com
+APP_ENV=production
+APP_DEBUG=false
+
+DB_CONNECTION=mysql
+DB_HOST=your-mysql-host
+DB_PORT=3306
+DB_DATABASE=truckfund
+DB_USERNAME=...
+DB_PASSWORD=...
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+```
+
+Optional:
+
+```
+RUN_MIGRATIONS=true         # runs php artisan migrate --force on start
+TRUCKFUND_HIGH_VALUE_SCORE=185
+```
+
+### Persistent storage
+
+Mount a volume on `/var/www/html/storage/app` so uploaded documents survive redeploys.
+
+### Local Docker test
+
+```bash
+docker build -t truckfund .
+docker run -p 8080:80 --env-file .env -e APP_KEY=base64:xxx truckfund
+```
+
+Or: `docker compose up --build` (see `docker-compose.yml`).
