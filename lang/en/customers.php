@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'name' => 'Display name',
+    'mobile' => 'Mobile',
+    'profile' => 'Profile',
+    'completed' => 'Completed',
+    'step' => 'Step',
+    'onboarding' => 'Onboarding',
+    'id_number' => 'ID number',
+    'name_en' => 'Name (EN)',
+    'name_ar' => 'Name (AR)',
+    'id_front' => 'ID front',
+    'id_back' => 'ID back',
+    'source' => 'Source code',
+    'nationality' => 'Nationality',
+    'city' => 'City',
+    'area' => 'Area',
+    'address' => 'Address',
+    'references_hint' => 'Add at least one reference.',
+    'ref_name' => 'Reference name',
+    'income_proof' => 'Has income proof',
+    'org_name' => 'Organization name',
+    'extra_docs_hint' => 'Upload any extra documents from the documents section.',
+    'complete' => 'Complete profile',
+];

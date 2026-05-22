@@ -1,0 +1,44 @@
+<?php
+
+return [
+    'user_role' => [
+        'Admin' => 'مدير النظام',
+        'SalesAgent' => 'موظف مبيعات',
+        'FinanceOfficer' => 'موظف تمويل',
+        'MerchantAgent' => 'وكيل جهة التمويل',
+    ],
+    'lead_status' => [
+        'New' => 'جديد',
+        'Pending' => 'قيد المتابعة',
+        'NotReachable' => 'غير متاح',
+        'Duplicate' => 'مكرر',
+        'ResolvedProfileCreated' => 'تم إنشاء الملف',
+        'ResolvedNotInterested' => 'غير مهتم',
+        'ResolvedNotQualified' => 'غير مؤهل',
+        'ResolvedProductSold' => 'تم البيع',
+        'ResolvedProductListed' => 'تم الإدراج',
+        'CashNoLoan' => 'نقدي — بدون تمويل',
+    ],
+    'lead_value' => ['Low' => 'منخفض', 'Mid' => 'متوسط', 'High' => 'مرتفع'],
+    'application_status' => [
+        'Draft' => 'مسودة',
+        'Submitted' => 'مُرسل',
+        'UnderReview' => 'قيد المراجعة',
+        'Accepted' => 'مقبول',
+        'Rejected' => 'مرفوض',
+        'Cancelled' => 'ملغى',
+        'BookingConfirmed' => 'تم تأكيد الحجز',
+        'DocsUploaded' => 'تم رفع المستندات',
+        'Completed' => 'مكتمل',
+    ],
+    'doc_type' => [
+        'NationalId' => 'بطاقة الهوية',
+        'IncomeProof' => 'إثبات دخل',
+        'CommercialReg' => 'سجل تجاري',
+        'LandContract' => 'عقد أرض',
+        'AcceptancePaper' => 'ورقة القبول',
+        'Other' => 'أخرى',
+    ],
+    'comm_type' => ['Note' => 'ملاحظة', 'Call' => 'اتصال', 'Email' => 'بريد', 'Sms' => 'رسالة'],
+    'gender' => ['Male' => 'ذكر', 'Female' => 'أنثى'],
+];
