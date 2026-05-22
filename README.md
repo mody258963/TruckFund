@@ -89,10 +89,28 @@ If the build appears stuck at `package:discover`, pull the latest `Dockerfile` (
 
 ### Required environment variables
 
-Set these in Dokploy (not in the image):
+In Dokploy open your application → **Environment** → add variables (then **Redeploy**).
+
+**APP_KEY is required.** Generate on your PC:
+
+```bash
+php artisan key:generate --show
+```
+
+Copy the full line (starts with `base64:`) and add in Dokploy:
+
+| Name | Value |
+|------|--------|
+| `APP_KEY` | `base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=` *(paste output from `php artisan key:generate --show`)* |
+
+Common mistakes:
+- Leaving `APP_KEY` empty or only `base64:`
+- Setting variables only at **build** time — they must be **runtime** environment variables
+- Using a `.env` file in the repo instead of Dokploy Environment (the container does not use your local `.env`)
+
+If the app starts without `APP_KEY`, check container logs — the entrypoint prints a generated key once; paste that value into Dokploy Environment.
 
 ```
-APP_KEY=base64:...          # php artisan key:generate --show
 APP_URL=https://your-domain.com
 APP_ENV=production
 APP_DEBUG=false
