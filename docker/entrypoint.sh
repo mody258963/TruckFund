@@ -3,6 +3,54 @@ set -e
 
 cd /var/www/html
 
+# Dokploy: paste REAL values in Environment (not placeholders like <RAILWAY_TCP_PROXY_DOMAIN>).
+write_runtime_env() {
+    ENV_FILE="/var/www/html/.env"
+
+    APP_NAME_VAL="${APP_NAME:-TruckFund}"
+    APP_ENV_VAL="${APP_ENV:-production}"
+    APP_DEBUG_VAL="${APP_DEBUG:-false}"
+    APP_URL_VAL="${APP_URL:-http://localhost}"
+
+    DB_CONN="${DB_CONNECTION:-mysql}"
+    DB_URL_VAL="${DB_URL:-${MYSQL_PUBLIC_URL:-${DATABASE_URL:-}}}"
+
+    if [ -z "$DB_URL_VAL" ] && [ -n "$DB_HOST" ] && [ -n "$DB_PASSWORD" ]; then
+        DB_URL_VAL="mysql://${DB_USERNAME:-root}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-3306}/${DB_DATABASE:-truckfund}"
+    fi
+
+    {
+        echo "APP_NAME=${APP_NAME_VAL}"
+        echo "APP_ENV=${APP_ENV_VAL}"
+        echo "APP_KEY=${APP_KEY}"
+        echo "APP_DEBUG=${APP_DEBUG_VAL}"
+        echo "APP_URL=${APP_URL_VAL}"
+        echo ""
+        echo "LOG_CHANNEL=${LOG_CHANNEL:-stderr}"
+        echo "LOG_LEVEL=${LOG_LEVEL:-warning}"
+        echo ""
+        echo "DB_CONNECTION=${DB_CONN}"
+        if [ -n "$DB_URL_VAL" ]; then
+            echo "DB_URL=${DB_URL_VAL}"
+        fi
+        echo "DB_HOST=${DB_HOST:-}"
+        echo "DB_PORT=${DB_PORT:-3306}"
+        echo "DB_DATABASE=${DB_DATABASE:-truckfund}"
+        echo "DB_USERNAME=${DB_USERNAME:-root}"
+        echo "DB_PASSWORD=${DB_PASSWORD:-}"
+        echo ""
+        echo "SESSION_DRIVER=${SESSION_DRIVER:-database}"
+        echo "CACHE_STORE=${CACHE_STORE:-database}"
+        echo "QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}"
+        echo "FILESYSTEM_DISK=${FILESYSTEM_DISK:-local}"
+        echo ""
+        echo "TRUCKFUND_HIGH_VALUE_SCORE=${TRUCKFUND_HIGH_VALUE_SCORE:-185}"
+    } > "$ENV_FILE"
+
+    chown www-data:www-data "$ENV_FILE"
+    chmod 640 "$ENV_FILE"
+}
+
 resolve_app_key() {
     if [ -n "$APP_KEY" ] && [ "$APP_KEY" != "base64:" ]; then
         return 0
@@ -24,26 +72,21 @@ resolve_app_key() {
     chown www-data:www-data "$KEY_FILE"
     chmod 600 "$KEY_FILE"
 
-    echo "=========================================="
-    echo "WARNING: APP_KEY is missing in Dokploy."
-    echo "Add to Dokploy Environment:"
+    echo "WARNING: APP_KEY was auto-generated. Add to Dokploy Environment:"
     echo "APP_KEY=$APP_KEY"
-    echo "=========================================="
 }
 
 resolve_app_key
+write_runtime_env
 
-# Laravel defaults to sqlite when DB_CONNECTION is unset — causes readonly DB errors in Docker.
-if [ "${APP_ENV:-production}" = "production" ] && [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
-    echo "ERROR: DB_CONNECTION is sqlite (or unset)."
-    echo "Set these in Dokploy Environment (use Railway PUBLIC TCP host/port):"
-    echo "  DB_CONNECTION=mysql"
-    echo "  DB_HOST=<RAILWAY_TCP_PROXY_DOMAIN>"
-    echo "  DB_PORT=<RAILWAY_TCP_PROXY_PORT>"
-    echo "  DB_DATABASE=truckfund"
-    echo "  DB_USERNAME=root"
-    echo "  DB_PASSWORD=<MYSQL_ROOT_PASSWORD>"
-    exit 1
+# Warn if DB still not configured (do not exit — avoids 502 crash loop)
+if [ -z "${DB_URL:-}" ] && [ -z "${MYSQL_PUBLIC_URL:-}" ] && [ -z "${DATABASE_URL:-}" ]; then
+    if [ -z "${DB_HOST:-}" ] || [ -z "${DB_PASSWORD:-}" ]; then
+        echo "WARNING: Database env vars missing. In Dokploy Environment add either:"
+        echo "  MYSQL_PUBLIC_URL=<full URL from Railway Connect tab>"
+        echo "  OR: DB_CONNECTION=mysql, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD"
+        echo "Use real values — not text in angle brackets < >"
+    fi
 fi
 
 mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app database
@@ -62,7 +105,7 @@ php artisan route:cache
 php artisan view:cache
 
 if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
-    php artisan migrate --force --no-interaction
+    php artisan migrate --force --no-interaction || echo "WARNING: migrations failed — fix DB env and redeploy"
 fi
 
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

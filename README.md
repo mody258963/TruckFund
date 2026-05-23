@@ -72,6 +72,8 @@ Private uploads use the `documents` disk (`storage/app/documents`).
 
 ## Deploy with Dokploy (Docker)
 
+See **[docs/DOKPLOY.md](docs/DOKPLOY.md)** for step-by-step Railway + Dokploy environment setup (fixes 502 and sqlite errors).
+
 The repo includes a multi-stage `Dockerfile` (Composer + Vite build, then Nginx + PHP 8.3-FPM).
 
 ### Dokploy settings
