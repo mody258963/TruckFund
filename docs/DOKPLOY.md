@@ -86,6 +86,8 @@ Redeploy, confirm login works, then **delete** `RUN_MIGRATE_FRESH` or set it to 
 
 Or run in the container shell:
 
+**Push latest code to Git and Rebuild** in Dokploy first — otherwise `truckfund:seed-demo` does not exist in the container.
+
 ```bash
 php artisan truckfund:seed-demo
 # or full reset (after redeploy):
