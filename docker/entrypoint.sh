@@ -121,8 +121,18 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
-    php artisan migrate --force --no-interaction || echo "WARNING: migrations failed — fix DB env and redeploy"
+if [ "${RUN_MIGRATE_FRESH:-false}" = "true" ]; then
+    echo "RUN_MIGRATE_FRESH=true — dropping all tables and re-seeding..."
+    php artisan migrate:fresh --seed --force --no-interaction \
+        || echo "WARNING: migrate:fresh --seed failed — check DB env"
+elif [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+    php artisan migrate --force --no-interaction \
+        || echo "WARNING: migrations failed — fix DB env and redeploy"
+    if [ "${RUN_SEED_DATABASE:-false}" = "true" ]; then
+        echo "RUN_SEED_DATABASE=true — seeding users and demo data..."
+        php artisan db:seed --force --no-interaction \
+            || echo "WARNING: db:seed failed"
+    fi
 fi
 
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

@@ -60,6 +60,38 @@ Also set: `APP_KEY`, `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, `SESSIO
 
 ---
 
+## Seed demo users (no users in DB)
+
+Default logins after seeding:
+
+| Email | Password | Role |
+|-------|----------|------|
+| `admin@truckfund.test` | `password` | Admin |
+| `sales@truckfund.test` | `password` | Sales |
+| `finance@truckfund.test` | `password` | Finance |
+
+**Option A — seed only** (keeps existing data): add to Environment, redeploy once, then remove:
+
+```text
+RUN_SEED_DATABASE=true
+```
+
+**Option B — full reset** (drops all tables, then migrate + seed): use only on a new/empty DB:
+
+```text
+RUN_MIGRATE_FRESH=true
+```
+
+Redeploy, confirm login works, then **delete** `RUN_MIGRATE_FRESH` or set it to `false` so the next deploy does not wipe data again.
+
+Or run in the container shell:
+
+```bash
+php artisan migrate:fresh --seed --force
+```
+
+---
+
 ## Step 3: Save and redeploy
 
 1. **Save** environment  

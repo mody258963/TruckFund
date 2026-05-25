@@ -11,53 +11,88 @@ use App\Models\Merchant;
 use App\Models\User;
 use App\Services\LeadService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->admin()->create([
-            'full_name' => 'Admin User',
-            'email' => 'admin@truckfund.test',
-            'password' => 'password',
-        ]);
+        $this->seedUsers();
+        $this->seedCatalog();
+        $this->seedSampleLead();
+    }
 
-        User::factory()->create([
-            'full_name' => 'Sales Agent',
-            'email' => 'sales@truckfund.test',
-            'role' => UserRole::SalesAgent,
-            'password' => 'password',
-        ]);
+    private function seedUsers(): void
+    {
+        $users = [
+            [
+                'full_name' => 'Admin User',
+                'email' => 'admin@truckfund.test',
+                'role' => UserRole::Admin,
+            ],
+            [
+                'full_name' => 'Sales Agent',
+                'email' => 'sales@truckfund.test',
+                'role' => UserRole::SalesAgent,
+            ],
+            [
+                'full_name' => 'Finance Officer',
+                'email' => 'finance@truckfund.test',
+                'role' => UserRole::FinanceOfficer,
+            ],
+        ];
 
-        User::factory()->financeOfficer()->create([
-            'full_name' => 'Finance Officer',
-            'email' => 'finance@truckfund.test',
-            'password' => 'password',
-        ]);
+        foreach ($users as $data) {
+            User::query()->updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'full_name' => $data['full_name'],
+                    'role' => $data['role'],
+                    'password' => Hash::make('password'),
+                    'is_active' => true,
+                ]
+            );
+        }
+    }
 
-        Merchant::query()->create([
-            'name' => 'Nile Finance Partner',
-            'type' => 1,
-            'contact_email' => 'partner@example.com',
-            'is_active' => true,
-        ]);
+    private function seedCatalog(): void
+    {
+        Merchant::query()->firstOrCreate(
+            ['contact_email' => 'partner@example.com'],
+            [
+                'name' => 'Nile Finance Partner',
+                'type' => 1,
+                'is_active' => true,
+            ]
+        );
 
-        FinancialProduct::query()->create([
-            'name' => 'Standard Truck Loan',
-            'product_code' => 'STL-01',
-            'percentage' => 18.5,
-            'description' => 'Default truck financing product',
-            'is_active' => true,
-        ]);
+        FinancialProduct::query()->firstOrCreate(
+            ['product_code' => 'STL-01'],
+            [
+                'name' => 'Standard Truck Loan',
+                'percentage' => 18.5,
+                'description' => 'Default truck financing product',
+                'is_active' => true,
+            ]
+        );
 
-        AutoProduct::query()->create([
-            'name' => 'Heavy Duty 6x4',
-            'type' => 1,
-            'brand' => 'Mercedes',
-            'chassis' => 'CH-001',
-            'price' => 850000,
-            'is_active' => true,
-        ]);
+        AutoProduct::query()->firstOrCreate(
+            ['chassis' => 'CH-001'],
+            [
+                'name' => 'Heavy Duty 6x4',
+                'type' => 1,
+                'brand' => 'Mercedes',
+                'price' => 850000,
+                'is_active' => true,
+            ]
+        );
+    }
+
+    private function seedSampleLead(): void
+    {
+        if (Lead::query()->where('email', 'ahmed@example.com')->exists()) {
+            return;
+        }
 
         $leadService = app(LeadService::class);
         $leadService->create([
@@ -69,6 +104,6 @@ class DatabaseSeeder extends Seeder
             'down_payment_pct' => 25,
         ]);
 
-        Lead::query()->first()?->update(['status' => LeadStatus::Pending]);
+        Lead::query()->where('email', 'ahmed@example.com')->first()?->update(['status' => LeadStatus::Pending]);
     }
 }
