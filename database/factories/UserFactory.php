@@ -19,10 +19,12 @@ class UserFactory extends Factory
 
     public function definition(): array
     {
+        $id = Str::lower(Str::random(8));
+
         return [
-            'full_name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->phoneNumber(),
+            'full_name' => 'Test User '.$id,
+            'email' => "user-{$id}@example.test",
+            'phone' => '0100'.random_int(1000000, 9999999),
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::SalesAgent,
             'is_active' => true,

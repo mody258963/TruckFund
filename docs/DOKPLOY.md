@@ -84,11 +84,15 @@ RUN_MIGRATE_FRESH=true
 
 Redeploy, confirm login works, then **delete** `RUN_MIGRATE_FRESH` or set it to `false` so the next deploy does not wipe data again.
 
-Or run in the container shell:
+Or run in the container shell (after redeploy with latest code — production has no Faker):
 
 ```bash
+php artisan db:seed --force
+# or full reset:
 php artisan migrate:fresh --seed --force
 ```
+
+If you see `Call to undefined function fake()`, the image is outdated: **redeploy** from the latest Git commit (seeder no longer uses factories).
 
 ---
 
