@@ -123,15 +123,18 @@ php artisan view:cache
 
 if [ "${RUN_MIGRATE_FRESH:-false}" = "true" ]; then
     echo "RUN_MIGRATE_FRESH=true — dropping all tables and re-seeding..."
-    php artisan migrate:fresh --seed --force --no-interaction \
-        || echo "WARNING: migrate:fresh --seed failed — check DB env"
+    php artisan migrate:fresh --force --no-interaction \
+        && php artisan truckfund:seed-demo --no-interaction \
+        || php artisan migrate:fresh --seed --force --no-interaction \
+        || echo "WARNING: migrate:fresh / seed failed — check DB env"
 elif [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
     php artisan migrate --force --no-interaction \
         || echo "WARNING: migrations failed — fix DB env and redeploy"
     if [ "${RUN_SEED_DATABASE:-false}" = "true" ]; then
         echo "RUN_SEED_DATABASE=true — seeding users and demo data..."
-        php artisan db:seed --force --no-interaction \
-            || echo "WARNING: db:seed failed"
+        php artisan truckfund:seed-demo --no-interaction \
+            || php artisan db:seed --force --no-interaction \
+            || echo "WARNING: seed failed"
     fi
 fi
 

@@ -84,15 +84,19 @@ RUN_MIGRATE_FRESH=true
 
 Redeploy, confirm login works, then **delete** `RUN_MIGRATE_FRESH` or set it to `false` so the next deploy does not wipe data again.
 
-Or run in the container shell (after redeploy with latest code — production has no Faker):
+Or run in the container shell:
 
 ```bash
-php artisan db:seed --force
-# or full reset:
-php artisan migrate:fresh --seed --force
+php artisan truckfund:seed-demo
+# or full reset (after redeploy):
+php artisan migrate:fresh --force && php artisan truckfund:seed-demo
 ```
 
-If you see `Call to undefined function fake()`, the image is outdated: **redeploy** from the latest Git commit (seeder no longer uses factories).
+If you see `Call to undefined function fake()`, the running image is **old**. Either **redeploy** from latest Git, or create the admin user immediately:
+
+```bash
+php artisan tinker --execute="use App\Models\User; use App\Enums\UserRole; use Illuminate\Support\Facades\Hash; User::updateOrCreate(['email'=>'admin@truckfund.test'],['full_name'=>'Admin User','role'=>UserRole::Admin,'password'=>Hash::make('password'),'is_active'=>true]); echo 'ok';"
+```
 
 ---
 
