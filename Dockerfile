@@ -69,8 +69,9 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/99-truckfund.ini
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/generate-app-key.sh /usr/local/bin/generate-app-key.sh
 
-RUN chmod +x /usr/local/bin/entrypoint.sh \
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/generate-app-key.sh \
     && mkdir -p /var/www/html /run/nginx \
     && chown -R www-data:www-data /var/www/html
 

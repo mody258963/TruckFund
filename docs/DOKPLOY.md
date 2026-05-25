@@ -29,7 +29,6 @@ Open **Application → Environment** (runtime env, not build-only).
 | Name | Value |
 |------|--------|
 | `MYSQL_PUBLIC_URL` | Paste the full `mysql://root:...@host:port/truckfund` from Railway |
-| `APP_KEY` | `base64:...` from `php artisan key:generate --show` |
 | `APP_URL` | `https://your-app.sslip.io` (exact public HTTPS URL — **not** `http://`) |
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
@@ -45,7 +44,23 @@ Open **Application → Environment** (runtime env, not build-only).
 | `DB_USERNAME` | `root` |
 | `DB_PASSWORD` | your real password |
 
-Also set: `APP_KEY`, `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, `SESSION_DRIVER=database`, `CACHE_STORE=database`.
+Also set: `APP_URL`, `APP_ENV=production`, `APP_DEBUG=false`, `SESSION_DRIVER=database`, `CACHE_STORE=database`.
+
+### `APP_KEY` (optional — auto-generated)
+
+You do **not** need to set `APP_KEY` manually. On container start, `docker/generate-app-key.sh`:
+
+1. Uses `APP_KEY` from Dokploy if you set it  
+2. Otherwise loads the key from `storage/app/.app_key` (persisted volume)  
+3. Otherwise generates `base64:...` and prints it in deploy logs  
+
+Copy the key from logs into Dokploy **once** so it stays the same across redeploys without a volume:
+
+```text
+APP_KEY=base64:xxxxxxxx
+```
+
+Generate locally (optional): `php artisan key:generate --show`
 
 ---
 
@@ -136,4 +151,4 @@ The browser loads the page over **HTTPS** but Laravel emitted asset URLs as **HT
 3. Optional: `ASSET_URL` — same as `APP_URL` (entrypoint sets it automatically).
 4. `APP_FORCE_HTTPS=true` (default in production via entrypoint).
 
-The app trusts reverse-proxy headers and forces `https` for generated URLs in production. If the page is still plain HTML, open DevTools → **Network** and confirm `build/assets/app-*.css` returns **200** over **https**. If those requests are red/blocked, fix `APP_URL` and redeploy.
+The app trusts `X-Forwarded-Proto` only (not empty `X-Forwarded-Host`, which crashes Symfony `getPort()`). URLs are forced to `https` via `APP_URL` / `APP_FORCE_HTTPS`. If the page is still plain HTML, open DevTools → **Network** and confirm `build/assets/app-*.css` returns **200** over **https**. If those requests are red/blocked, fix `APP_URL` and redeploy.

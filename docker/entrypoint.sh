@@ -68,32 +68,8 @@ write_runtime_env() {
     chmod 640 "$ENV_FILE"
 }
 
-resolve_app_key() {
-    if [ -n "$APP_KEY" ] && [ "$APP_KEY" != "base64:" ]; then
-        return 0
-    fi
-
-    KEY_FILE="/var/www/html/storage/app/.app_key"
-
-    if [ -f "$KEY_FILE" ]; then
-        APP_KEY=$(cat "$KEY_FILE")
-        export APP_KEY
-        return 0
-    fi
-
-    APP_KEY="base64:$(php -r 'echo base64_encode(random_bytes(32));')"
-    export APP_KEY
-
-    mkdir -p /var/www/html/storage/app
-    echo "$APP_KEY" > "$KEY_FILE"
-    chown www-data:www-data "$KEY_FILE"
-    chmod 600 "$KEY_FILE"
-
-    echo "WARNING: APP_KEY was auto-generated. Add to Dokploy Environment:"
-    echo "APP_KEY=$APP_KEY"
-}
-
-resolve_app_key
+APP_KEY=$(/usr/local/bin/generate-app-key.sh)
+export APP_KEY
 write_runtime_env
 
 # Warn if DB still not configured (do not exit — avoids 502 crash loop)

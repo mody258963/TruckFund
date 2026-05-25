@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -13,8 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Always trust edge proxy (Dokploy). Do not use env() here — broken after config:cache.
-        $middleware->trustProxies(at: '*');
+        // Dokploy: trust HTTPS from edge only. Empty X-Forwarded-Host breaks getPort() / getHttpHost().
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO,
+        );
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'locale' => SetLocale::class,

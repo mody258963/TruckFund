@@ -93,24 +93,15 @@ If the build appears stuck at `package:discover`, pull the latest `Dockerfile` (
 
 In Dokploy open your application → **Environment** → add variables (then **Redeploy**).
 
-**APP_KEY is required.** Generate on your PC:
-
-```bash
-php artisan key:generate --show
-```
-
-Copy the full line (starts with `base64:`) and add in Dokploy:
+**APP_KEY** is optional in Docker. `docker/generate-app-key.sh` runs on container start and creates or loads a key automatically. For a stable key across redeploys, copy from deploy logs into Dokploy:
 
 | Name | Value |
 |------|--------|
-| `APP_KEY` | `base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=` *(paste output from `php artisan key:generate --show`)* |
+| `APP_KEY` | `base64:...` *(optional — from logs or `php artisan key:generate --show`)* |
 
 Common mistakes:
-- Leaving `APP_KEY` empty or only `base64:`
 - Setting variables only at **build** time — they must be **runtime** environment variables
 - Using a `.env` file in the repo instead of Dokploy Environment (the container does not use your local `.env`)
-
-If the app starts without `APP_KEY`, check container logs — the entrypoint prints a generated key once; paste that value into Dokploy Environment.
 
 **Full Dokploy Environment (copy and fill values):**
 
@@ -119,7 +110,7 @@ APP_NAME=TruckFund
 APP_URL=https://your-domain.com
 APP_ENV=production
 APP_DEBUG=false
-APP_KEY=base64:...
+# APP_KEY=base64:...  (optional — auto-generated if omitted)
 
 DB_CONNECTION=mysql
 DB_HOST=<RAILWAY_TCP_PROXY_DOMAIN>
