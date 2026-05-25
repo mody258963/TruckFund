@@ -54,6 +54,14 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'asset_url' => env('ASSET_URL'),
+
+    /*
+    | Set true behind Dokploy/reverse proxy (HTTPS at edge, HTTP to container).
+    | Cached on deploy — do not rely on env() outside config files in production.
+    */
+    'force_https' => filter_var(env('APP_FORCE_HTTPS', env('APP_ENV', 'production') === 'production'), FILTER_VALIDATE_BOOL),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

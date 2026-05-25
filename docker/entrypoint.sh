@@ -11,6 +11,19 @@ write_runtime_env() {
     APP_ENV_VAL="${APP_ENV:-production}"
     APP_DEBUG_VAL="${APP_DEBUG:-false}"
     APP_URL_VAL="${APP_URL:-http://localhost}"
+    APP_FORCE_HTTPS_VAL="${APP_FORCE_HTTPS:-}"
+
+    if [ "$APP_ENV_VAL" = "production" ] && [ -z "$APP_FORCE_HTTPS_VAL" ]; then
+        APP_FORCE_HTTPS_VAL="true"
+    fi
+
+    if [ "$APP_FORCE_HTTPS_VAL" = "true" ]; then
+        case "$APP_URL_VAL" in
+            http://*) APP_URL_VAL="https://${APP_URL_VAL#http://}" ;;
+        esac
+    fi
+
+    ASSET_URL_VAL="${ASSET_URL:-$APP_URL_VAL}"
 
     DB_CONN="${DB_CONNECTION:-mysql}"
     DB_URL_VAL="${DB_URL:-${MYSQL_PUBLIC_URL:-${DATABASE_URL:-}}}"
@@ -25,6 +38,10 @@ write_runtime_env() {
         echo "APP_KEY=${APP_KEY}"
         echo "APP_DEBUG=${APP_DEBUG_VAL}"
         echo "APP_URL=${APP_URL_VAL}"
+        echo "ASSET_URL=${ASSET_URL_VAL}"
+        if [ -n "$APP_FORCE_HTTPS_VAL" ]; then
+            echo "APP_FORCE_HTTPS=${APP_FORCE_HTTPS_VAL}"
+        fi
         echo ""
         echo "LOG_CHANNEL=${LOG_CHANNEL:-stderr}"
         echo "LOG_LEVEL=${LOG_LEVEL:-warning}"

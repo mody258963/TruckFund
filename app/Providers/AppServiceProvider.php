@@ -16,6 +16,7 @@ use App\Repositories\Eloquent\CatalogRepository;
 use App\Repositories\Eloquent\CustomerRepository;
 use App\Repositories\Eloquent\FinanceApplicationRepository;
 use App\Repositories\Eloquent\LeadRepository;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,8 +32,29 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->configureHttpsUrls();
+
         Lead::observe(AuditableObserver::class);
         Customer::observe(AuditableObserver::class);
         FinanceApplication::observe(AuditableObserver::class);
+    }
+
+    private function configureHttpsUrls(): void
+    {
+        $appUrl = (string) config('app.url');
+        $forceHttps = (bool) config('app.force_https');
+
+        if ($forceHttps || str_starts_with($appUrl, 'https://')) {
+            URL::forceScheme('https');
+
+            if (str_starts_with($appUrl, 'http://')) {
+                URL::forceRootUrl('https://'.substr($appUrl, 7));
+            }
+        }
+
+        $assetUrl = config('app.asset_url');
+        if (is_string($assetUrl) && $assetUrl !== '') {
+            URL::useAssetOrigin(rtrim($assetUrl, '/'));
+        }
     }
 }

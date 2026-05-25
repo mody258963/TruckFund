@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Always trust edge proxy (Dokploy). Do not use env() here — broken after config:cache.
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'locale' => SetLocale::class,

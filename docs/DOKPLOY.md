@@ -30,7 +30,7 @@ Open **Application → Environment** (runtime env, not build-only).
 |------|--------|
 | `MYSQL_PUBLIC_URL` | Paste the full `mysql://root:...@host:port/truckfund` from Railway |
 | `APP_KEY` | `base64:...` from `php artisan key:generate --show` |
-| `APP_URL` | `https://truckfund-production.up.railway.app` |
+| `APP_URL` | `https://your-app.sslip.io` (exact public HTTPS URL — **not** `http://`) |
 | `APP_ENV` | `production` |
 | `APP_DEBUG` | `false` |
 
@@ -80,3 +80,18 @@ php artisan migrate:status
 ## Port
 
 Container listens on **80**. Dokploy domain should target port **80**.
+
+---
+
+## Mixed content (CSS/JS blocked on login)
+
+The browser loads the page over **HTTPS** but Laravel emitted asset URLs as **HTTP** (`http://.../build/assets/...`). Browsers block those scripts and styles.
+
+**Fix in Dokploy Environment:**
+
+1. Set `APP_URL` to your **HTTPS** URL, e.g. `https://truckfund-truck-fund-epb8fr-c25c32-72-62-16-40.sslip.io` (no trailing slash).
+2. Redeploy after saving (config is cached on boot).
+3. Optional: `ASSET_URL` — same as `APP_URL` (entrypoint sets it automatically).
+4. `APP_FORCE_HTTPS=true` (default in production via entrypoint).
+
+The app trusts reverse-proxy headers and forces `https` for generated URLs in production. If the page is still plain HTML, open DevTools → **Network** and confirm `build/assets/app-*.css` returns **200** over **https**. If those requests are red/blocked, fix `APP_URL` and redeploy.
