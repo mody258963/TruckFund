@@ -12,13 +12,24 @@ use App\Models\Identification;
 use App\Models\Lead;
 use App\Models\Reference;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class CustomerOnboardingService
 {
-    public const TOTAL_STEPS = 8;
+    public const TOTAL_STEPS = 6;
 
-    public function __construct(protected CustomerRepositoryInterface $customers) {}
+    /** @var list<DocType> */
+    public const EXTRA_DOC_TYPES = [
+        DocType::LandContract,
+        DocType::AcceptancePaper,
+        DocType::Other,
+    ];
+
+    public function __construct(
+        protected CustomerRepositoryInterface $customers,
+        protected ImageStorageService $images,
+    ) {}
 
     public function createFromLead(Lead $lead): Customer
     {
@@ -31,24 +42,48 @@ class CustomerOnboardingService
         ]);
     }
 
-    public function saveStep(Customer $customer, int $step, array $data): Customer
+    /** Map stored onboarding_step to current wizard step (6-step flow). */
+    public static function normalizeStep(int $stored): int
     {
+        if ($stored >= 1 && $stored <= self::TOTAL_STEPS) {
+            return $stored;
+        }
+
+        // Legacy 8-step wizard values
+        if ($stored <= 2) {
+            return $stored;
+        }
+        if ($stored <= 5) {
+            return 3;
+        }
+        if ($stored === 6) {
+            return 4;
+        }
+        if ($stored === 7) {
+            return 5;
+        }
+
+        return self::TOTAL_STEPS;
+    }
+
+    public function saveStep(
+        Customer $customer,
+        int $step,
+        array $data,
+        ?UploadedFile $incomeProofFile = null,
+        ?UploadedFile $commercialRegFile = null,
+    ): Customer {
         match ($step) {
             1 => $this->customers->update($customer, collect($data)->only([
                 'display_name', 'mobile_number', 'email',
             ])->all()),
             2 => $this->saveIdentification($customer, $data),
-            3 => $this->customers->update($customer, ['source' => $data['source'] ?? null]),
-            4 => $this->customers->update($customer, collect($data)->only([
-                'nationality', 'date_of_birth', 'gender', 'marital_status',
-                'job_status', 'occupation', 'organization_name',
-            ])->all()),
-            5 => $this->customers->update($customer, collect($data)->only([
+            3 => $this->customers->update($customer, collect($data)->only([
                 'city', 'area', 'address',
             ])->all()),
-            6 => $this->saveReferences($customer, $data['references'] ?? []),
-            7 => $this->saveFinancialData($customer, $data),
-            8 => $this->saveExtraDocuments($customer, $data),
+            4 => $this->saveReferences($customer, $data['references'] ?? []),
+            5 => $this->saveFinancialStep($customer, $data, $incomeProofFile, $commercialRegFile),
+            6 => $this->saveExtraDocuments($customer, $data),
             default => null,
         };
 
@@ -85,6 +120,25 @@ class CustomerOnboardingService
         }
     }
 
+    protected function saveFinancialStep(
+        Customer $customer,
+        array $data,
+        ?UploadedFile $incomeProofFile,
+        ?UploadedFile $commercialRegFile,
+    ): void {
+        $this->saveFinancialData($customer, $data);
+
+        $userId = Auth::id();
+
+        if ($incomeProofFile) {
+            $this->storeUpload($customer, $incomeProofFile, DocType::IncomeProof, $userId);
+        }
+
+        if ($commercialRegFile) {
+            $this->storeUpload($customer, $commercialRegFile, DocType::CommercialReg, $userId);
+        }
+    }
+
     protected function saveFinancialData(Customer $customer, array $data): void
     {
         FinancialData::query()->updateOrCreate(
@@ -110,19 +164,38 @@ class CustomerOnboardingService
 
     public function storeUpload(Customer $customer, UploadedFile $file, DocType $type, ?string $userId = null): Document
     {
-        $path = $file->store('customers/'.$customer->customer_id, 'documents');
+        $stored = $this->images->store($file, 'customers/'.$customer->customer_id);
 
         return Document::query()->create([
             'customer_id' => $customer->customer_id,
             'doc_type' => $type,
-            'file_url' => $path,
+            'file_url' => $stored['path'],
             'uploaded_by' => $userId,
         ]);
     }
 
+    public function deleteDocument(Customer $customer, string $docId): void
+    {
+        $doc = Document::query()
+            ->where('customer_id', $customer->customer_id)
+            ->where('doc_id', $docId)
+            ->firstOrFail();
+
+        if (! in_array($doc->doc_type, self::EXTRA_DOC_TYPES, true)) {
+            abort(403);
+        }
+
+        if ($doc->file_url) {
+            Storage::disk(ImageStorageService::DISK)->delete($doc->file_url);
+        }
+
+        $doc->delete();
+    }
+
     public function storeIdImage(Customer $customer, UploadedFile $file, string $side): void
     {
-        $path = $file->store('customers/'.$customer->customer_id.'/id', 'documents');
+        $stored = $this->images->store($file, 'customers/'.$customer->customer_id.'/id');
+        $path = $stored['path'];
         $field = $side === 'back' ? 'id_back_url' : 'id_front_url';
         Identification::query()->updateOrCreate(
             ['customer_id' => $customer->customer_id],

@@ -82,7 +82,7 @@ if [ -z "${DB_URL:-}" ] && [ -z "${MYSQL_PUBLIC_URL:-}" ] && [ -z "${DATABASE_UR
     fi
 fi
 
-mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app database
+mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app/documents storage/app database
 chown -R www-data:www-data storage bootstrap/cache database
 chmod -R ug+rwx storage bootstrap/cache database
 

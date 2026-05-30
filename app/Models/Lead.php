@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LeadSource;
 use App\Enums\LeadStatus;
 use App\Enums\LeadValue;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,8 +26,11 @@ class Lead extends BaseUuidModel
         'ai_score',
         'is_priority',
         'assigned_user_id',
+        'created_by_user_id',
         'customer_id',
         'status',
+        'source',
+        'freelancer_id',
     ];
 
     protected function casts(): array
@@ -34,6 +38,7 @@ class Lead extends BaseUuidModel
         return [
             'status' => LeadStatus::class,
             'value' => LeadValue::class,
+            'source' => LeadSource::class,
             'is_priority' => 'boolean',
             'price' => 'decimal:2',
         ];
@@ -42,6 +47,16 @@ class Lead extends BaseUuidModel
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id', 'user_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function freelancer(): BelongsTo
+    {
+        return $this->belongsTo(Freelancer::class, 'freelancer_id', 'freelancer_id');
     }
 
     public function customer(): BelongsTo
@@ -53,5 +68,9 @@ class Lead extends BaseUuidModel
     {
         return $this->hasMany(CommunicationLog::class, 'lead_id', 'lead_id');
     }
-}
 
+    public function transferRequests(): HasMany
+    {
+        return $this->hasMany(LeadTransferRequest::class, 'lead_id', 'lead_id');
+    }
+}

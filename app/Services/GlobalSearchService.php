@@ -29,7 +29,7 @@ class GlobalSearchService
             ->orWhere('mobile_number', 'like', $s)
             ->limit($limit)
             ->get()
-            ->map(fn ($c) => ['type' => 'customer', 'id' => $c->customer_id, 'label' => $c->display_name, 'url' => route('customers.onboarding', $c)]);
+            ->map(fn ($c) => ['type' => 'customer', 'id' => $c->customer_id, 'label' => $c->display_name, 'url' => route('customers.show', $c)]);
 
         $apps = FinanceApplication::query()
             ->where('app_number', 'like', $s)

@@ -11,6 +11,7 @@
                     @foreach($fields as $field)
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __("catalog.{$field}") }}</th>
                     @endforeach
+                    <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('common.created_at') }}</th>
                     <th class="px-4 py-3"></th>
                 </tr>
             </thead>
@@ -20,12 +21,13 @@
                     @foreach($fields as $field)
                     <td class="px-4 py-3 text-sm">{{ $item->{$field} }}</td>
                     @endforeach
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-zinc-500">{{ $item->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                     <td class="px-4 py-3 text-end">
                         <flux:button wire:click="edit('{{ $item->getKey() }}')" size="sm" variant="ghost">{{ __('common.edit') }}</flux:button>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="{{ count($fields)+1 }}" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
+                <tr><td colspan="{{ count($fields)+2 }}" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

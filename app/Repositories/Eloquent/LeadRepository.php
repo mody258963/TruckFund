@@ -4,6 +4,8 @@ namespace App\Repositories\Eloquent;
 
 use App\Contracts\Repositories\LeadRepositoryInterface;
 use App\Models\Lead;
+use App\Models\User;
+use App\Services\UserHierarchyService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -17,8 +19,29 @@ class LeadRepository extends EloquentRepository implements LeadRepositoryInterfa
     public function findWithRelations(string $id): ?Lead
     {
         return $this->query()
-            ->with(['assignedUser', 'customer', 'communicationLogs.user'])
+            ->with([
+                'assignedUser',
+                'createdBy',
+                'freelancer',
+                'customer',
+                'communicationLogs.user',
+                'transferRequests.requestedBy',
+                'transferRequests.toUser',
+            ])
             ->find($id);
+    }
+
+    public function paginate(int $perPage = 15, array $filters = [], ?User $viewer = null): LengthAwarePaginator
+    {
+        $query = $this->query()->with(['assignedUser', 'createdBy', 'freelancer']);
+
+        if ($viewer) {
+            app(UserHierarchyService::class)->scopeLeadsVisibleTo($query, $viewer);
+        }
+
+        $this->applyFilters($query, $filters);
+
+        return $query->latest()->paginate($perPage);
     }
 
     protected function applyFilters(Builder $query, array $filters): Builder

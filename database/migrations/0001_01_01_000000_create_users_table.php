@@ -15,6 +15,10 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->string('password');
             $table->unsignedTinyInteger('role');
+            $table->foreignUuid('reports_to_user_id')
+                ->nullable()
+                ->constrained('users', 'user_id')
+                ->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->string('id_card_url', 255)->nullable();
             $table->rememberToken();

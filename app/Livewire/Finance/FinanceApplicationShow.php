@@ -40,15 +40,64 @@ class FinanceApplicationShow extends Component
         $this->bookingDate = $this->application->booking_effective_date?->format('Y-m-d');
     }
 
+    public function nextDraftStep(): void
+    {
+        $this->validate($this->draftStepRules());
+        $this->wizardStep = min(3, $this->wizardStep + 1);
+    }
+
+    public function previousDraftStep(): void
+    {
+        $this->wizardStep = max(1, $this->wizardStep - 1);
+    }
+
+    /** @return array<string, mixed> */
+    protected function draftStepRules(): array
+    {
+        return match ($this->wizardStep) {
+            1 => [
+                'form.financial_merchant_id' => 'required|uuid',
+                'form.auto_product_id' => 'required|uuid',
+            ],
+            2 => [
+                'form.financial_product_id' => 'required|uuid',
+                'form.total_truck_price' => 'required|numeric|min:0',
+                'form.down_payment' => 'required|numeric|min:0',
+                'form.total_loan_amount' => 'required|numeric|min:0',
+                'form.monthly_income' => 'nullable|numeric|min:0',
+            ],
+            default => [],
+        };
+    }
+
     public function saveDraft(FinanceApplicationService $service): void
     {
         $this->authorize('update', $this->application);
+        if ($this->application->status === ApplicationStatus::Draft) {
+            $this->validate([
+                'form.financial_merchant_id' => 'required|uuid',
+                'form.auto_product_id' => 'required|uuid',
+                'form.financial_product_id' => 'required|uuid',
+                'form.total_truck_price' => 'required|numeric|min:0',
+                'form.down_payment' => 'required|numeric|min:0',
+                'form.total_loan_amount' => 'required|numeric|min:0',
+            ]);
+        }
         $this->application = $service->update($this->application, $this->form);
     }
 
     public function submitForReview(FinanceApplicationService $service): void
     {
         $this->authorize('update', $this->application);
+        $this->validate([
+            'form.financial_merchant_id' => 'required|uuid',
+            'form.auto_product_id' => 'required|uuid',
+            'form.financial_product_id' => 'required|uuid',
+            'form.total_truck_price' => 'required|numeric|min:0',
+            'form.down_payment' => 'required|numeric|min:0',
+            'form.total_loan_amount' => 'required|numeric|min:0',
+        ]);
+        $this->application = $service->update($this->application, $this->form);
         $this->application = $service->submitForReview($this->application);
     }
 
@@ -71,7 +120,8 @@ class FinanceApplicationShow extends Component
 
     public function uploadDoc(FinanceApplicationService $service): void
     {
-        $this->validate(['acceptanceDoc' => 'required|file|max:10240']);
+        $maxKb = config('truckfund.image_max_kb', 2048);
+        $this->validate(['acceptanceDoc' => "required|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf"]);
         $service->uploadDocument($this->application, $this->acceptanceDoc, DocType::AcceptancePaper, auth()->id());
         $this->application->refresh();
         $this->acceptanceDoc = null;

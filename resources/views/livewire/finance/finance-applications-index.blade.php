@@ -12,6 +12,7 @@
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('customers.name') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('finance.status') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('finance.loan_amount') }}</th>
+                    <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('common.created_at') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -21,9 +22,10 @@
                     <td class="px-4 py-3">{{ $app->customer?->display_name }}</td>
                     <td class="px-4 py-3"><flux:badge color="{{ $app->status->color() }}">{{ $app->status->label() }}</flux:badge></td>
                     <td class="px-4 py-3">{{ number_format($app->total_loan_amount, 2) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-zinc-500">{{ $app->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
+                <tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -9,13 +9,13 @@ use App\Jobs\RunCreditChecksJob;
 use App\Models\ApplicationDocument;
 use App\Models\FinanceApplication;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class FinanceApplicationService
 {
     public function __construct(
         protected FinanceApplicationRepositoryInterface $applications,
         protected CommunicationLogService $communicationLogs,
+        protected ImageStorageService $images,
     ) {}
 
     public function createDraft(array $data): FinanceApplication
@@ -68,11 +68,11 @@ class FinanceApplicationService
         DocType $type,
         ?string $userId = null
     ): ApplicationDocument {
-        $path = $file->store('applications/'.$app->app_id, 'documents');
+        $stored = $this->images->store($file, 'applications/'.$app->app_id);
         $doc = ApplicationDocument::query()->create([
             'app_id' => $app->app_id,
             'doc_type' => $type,
-            'file_url' => $path,
+            'file_url' => $stored['path'],
             'uploaded_by' => $userId,
         ]);
 

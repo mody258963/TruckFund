@@ -3,9 +3,23 @@
 return [
     'user_role' => [
         'Admin' => 'مدير النظام',
-        'SalesAgent' => 'موظف مبيعات',
+        'SalesAgent' => 'مبيعات',
         'FinanceOfficer' => 'موظف تمويل',
         'MerchantAgent' => 'وكيل جهة التمويل',
+        'Manager' => 'مدير',
+        'TeamLeader' => 'قائد فريق',
+    ],
+    'lead_source' => [
+        'AdminDashboard' => 'لوحة المدير',
+        'SalesInput' => 'إدخال مبيعات',
+        'ExternalApi' => 'واجهة API',
+        'Referral' => 'إحالة',
+        'Import' => 'استيراد',
+    ],
+    'transfer_status' => [
+        'Pending' => 'معلق',
+        'Approved' => 'موافق عليه',
+        'Rejected' => 'مرفوض',
     ],
     'lead_status' => [
         'New' => 'جديد',

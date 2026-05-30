@@ -6,7 +6,7 @@
                 <tr>
                     <th class="px-4 py-3 text-start">{{ __('audit.entity') }}</th>
                     <th class="px-4 py-3 text-start">{{ __('audit.user') }}</th>
-                    <th class="px-4 py-3 text-start">{{ __('audit.when') }}</th>
+                    <th class="px-4 py-3 text-start">{{ __('common.created_at') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">

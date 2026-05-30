@@ -23,8 +23,11 @@ return new class extends Migration
             $table->unsignedInteger('ai_score')->nullable();
             $table->boolean('is_priority')->default(false);
             $table->foreignUuid('assigned_user_id')->nullable()->constrained('users', 'user_id')->nullOnDelete();
+            $table->foreignUuid('created_by_user_id')->nullable()->constrained('users', 'user_id')->nullOnDelete();
             $table->uuid('customer_id')->nullable()->index();
             $table->unsignedTinyInteger('status')->default(0)->index();
+            $table->unsignedTinyInteger('source')->default(0)->index();
+            $table->foreignUuid('freelancer_id')->nullable()->constrained('freelancers', 'freelancer_id')->nullOnDelete();
             $table->timestamps();
         });
     }

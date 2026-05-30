@@ -8,27 +8,34 @@
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('customers.name') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('customers.mobile') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('customers.profile') }}</th>
+                    <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('common.created_at') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                 @forelse($customers as $customer)
                 <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
-                    <td class="px-4 py-3">{{ $customer->display_name }}</td>
+                    <td class="px-4 py-3">
+                        <a href="{{ route('customers.show', $customer) }}" class="font-medium text-teal-600 hover:underline dark:text-teal-400" wire:navigate>{{ $customer->display_name }}</a>
+                    </td>
                     <td class="px-4 py-3">{{ $customer->mobile_number }}</td>
                     <td class="px-4 py-3">
                         @if($customer->profile_completed)
                             <flux:badge color="green">{{ __('customers.completed') }}</flux:badge>
                         @else
-                            <flux:badge color="amber">{{ __('customers.step') }} {{ $customer->onboarding_step }}/8</flux:badge>
+                            <flux:badge color="amber">{{ __('customers.step') }} {{ min($customer->onboarding_step, 6) }}/6</flux:badge>
                         @endif
                     </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-zinc-500">{{ $customer->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                     <td class="px-4 py-3 text-end">
-                        <flux:button href="{{ route('customers.onboarding', $customer) }}" size="sm" variant="ghost">{{ __('customers.onboarding') }}</flux:button>
+                        <div class="flex justify-end gap-2">
+                            <flux:button href="{{ route('customers.show', $customer) }}" size="sm" variant="ghost" wire:navigate>{{ __('customers.view_profile') }}</flux:button>
+                            <flux:button href="{{ route('customers.onboarding', $customer) }}" size="sm" variant="ghost" wire:navigate>{{ __('customers.onboarding') }}</flux:button>
+                        </div>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="4" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
+                <tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

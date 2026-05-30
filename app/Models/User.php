@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -27,6 +28,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'reports_to_user_id',
         'is_active',
         'id_card_url',
     ];
@@ -50,6 +52,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reports_to_user_id', 'user_id');
+    }
+
+    public function directReports(): HasMany
+    {
+        return $this->hasMany(User::class, 'reports_to_user_id', 'user_id');
+    }
+
     public function assignedLeads(): HasMany
     {
         return $this->hasMany(Lead::class, 'assigned_user_id', 'user_id');
@@ -58,5 +70,10 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isSales(): bool
+    {
+        return $this->role === UserRole::SalesAgent;
     }
 }

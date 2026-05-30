@@ -53,7 +53,11 @@ RUN apk add --no-cache \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    freetype-dev \
     && docker-php-ext-configure intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
         mbstring \
@@ -63,6 +67,7 @@ RUN apk add --no-cache \
         intl \
         opcache \
         zip \
+        gd \
     && rm -rf /var/cache/apk/*
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-truckfund.ini

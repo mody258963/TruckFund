@@ -29,4 +29,24 @@ enum ApplicationStatus: int
             self::Cancelled => 'zinc',
         };
     }
+
+    public const PIPELINE_STEPS = 6;
+
+    /** User-facing step (1–6) in the finance application workflow. */
+    public function pipelineStep(): int
+    {
+        return match ($this) {
+            self::Draft => 1,
+            self::Submitted, self::UnderReview => 2,
+            self::Accepted, self::Rejected, self::Cancelled => 3,
+            self::BookingConfirmed => 4,
+            self::DocsUploaded => 5,
+            self::Completed => 6,
+        };
+    }
+
+    public function isPipelineFailure(): bool
+    {
+        return in_array($this, [self::Rejected, self::Cancelled], true);
+    }
 }

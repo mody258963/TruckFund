@@ -3,9 +3,23 @@
 return [
     'user_role' => [
         'Admin' => 'Administrator',
-        'SalesAgent' => 'Sales Agent',
+        'SalesAgent' => 'Sales',
         'FinanceOfficer' => 'Finance Officer',
         'MerchantAgent' => 'Merchant Agent',
+        'Manager' => 'Manager',
+        'TeamLeader' => 'Team Leader',
+    ],
+    'lead_source' => [
+        'AdminDashboard' => 'Admin dashboard',
+        'SalesInput' => 'Sales input',
+        'ExternalApi' => 'External API',
+        'Referral' => 'Referral',
+        'Import' => 'Import',
+    ],
+    'transfer_status' => [
+        'Pending' => 'Pending',
+        'Approved' => 'Approved',
+        'Rejected' => 'Rejected',
     ],
     'lead_status' => [
         'New' => 'New',

@@ -23,6 +23,7 @@
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.customer') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.status') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.value') }}</th>
+                    <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('common.created_at') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -32,6 +33,7 @@
                     <td class="px-4 py-3">{{ $lead->customer_name }}</td>
                     <td class="px-4 py-3"><flux:badge color="{{ $lead->status->color() }}">{{ $lead->status->label() }}</flux:badge></td>
                     <td class="px-4 py-3">{{ $lead->value?->label() ?? '—' }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-zinc-500">{{ $lead->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                 </tr>
                 @endforeach
             </tbody>
