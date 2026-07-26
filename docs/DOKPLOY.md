@@ -1,4 +1,4 @@
-# Deploy TruckFund on Dokploy
+# Deploy TestFund on Dokploy
 
 ## Why you see 502 / crash loop
 
@@ -81,9 +81,9 @@ Default logins after seeding:
 
 | Email | Password | Role |
 |-------|----------|------|
-| `admin@truckfund.test` | `password` | Admin |
-| `sales@truckfund.test` | `password` | Sales |
-| `finance@truckfund.test` | `password` | Finance |
+| `admin@testfund.test` | `password` | Admin |
+| `sales@testfund.test` | `password` | Sales |
+| `finance@testfund.test` | `password` | Finance |
 
 **Option A — seed only** (keeps existing data): add to Environment, redeploy once, then remove:
 
@@ -112,7 +112,7 @@ php artisan migrate:fresh --force && php artisan truckfund:seed-demo
 If you see `Call to undefined function fake()`, the running image is **old**. Either **redeploy** from latest Git, or create the admin user immediately:
 
 ```bash
-php artisan tinker --execute="use App\Models\User; use App\Enums\UserRole; use Illuminate\Support\Facades\Hash; User::updateOrCreate(['email'=>'admin@truckfund.test'],['full_name'=>'Admin User','role'=>UserRole::Admin,'password'=>Hash::make('password'),'is_active'=>true]); echo 'ok';"
+php artisan tinker --execute="use App\Models\User; use App\Enums\UserRole; use Illuminate\Support\Facades\Hash; User::updateOrCreate(['email'=>'admin@testfund.test'],['full_name'=>'Admin User','role'=>UserRole::Admin,'password'=>Hash::make('password'),'is_active'=>true]); echo 'ok';"
 ```
 
 ---

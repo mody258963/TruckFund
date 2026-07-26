@@ -11,9 +11,9 @@ Artisan::command('truckfund:seed-demo', function () {
     (new \Database\Seeders\DatabaseSeeder)->run();
 
     $this->info('Demo data seeded.');
-    $this->line('  admin@truckfund.test / password');
-    $this->line('  manager@truckfund.test / password');
-    $this->line('  tl@truckfund.test / password');
-    $this->line('  sales@truckfund.test / password');
-    $this->line('  sales2@truckfund.test / password');
+    $this->line('  admin@testfund.test / password');
+    $this->line('  manager@testfund.test / password');
+    $this->line('  tl@testfund.test / password');
+    $this->line('  sales@testfund.test / password');
+    $this->line('  sales2@testfund.test / password');
 })->purpose('Seed demo users and catalog (no Faker)');

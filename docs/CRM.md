@@ -1,4 +1,4 @@
-# TruckFund CRM hierarchy
+# TestFund CRM hierarchy
 
 ## Roles
 
@@ -45,8 +45,8 @@ External referrers without login. Locked after create; only Admin can edit.
 
 | Email | Password | Role |
 |-------|----------|------|
-| admin@truckfund.test | password | Admin |
-| manager@truckfund.test | password | Manager |
-| tl@truckfund.test | password | Team Leader |
-| sales@truckfund.test | password | Sales |
-| sales2@truckfund.test | password | Sales |
+| admin@testfund.test | password | Admin |
+| manager@testfund.test | password | Manager |
+| tl@testfund.test | password | Team Leader |
+| sales@testfund.test | password | Sales |
+| sales2@testfund.test | password | Sales |

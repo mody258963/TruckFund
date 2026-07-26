@@ -7,7 +7,7 @@ cd /var/www/html
 write_runtime_env() {
     ENV_FILE="/var/www/html/.env"
 
-    APP_NAME_VAL="${APP_NAME:-TruckFund}"
+    APP_NAME_VAL="${APP_NAME:-TestFund}"
     APP_ENV_VAL="${APP_ENV:-production}"
     APP_DEBUG_VAL="${APP_DEBUG:-false}"
     APP_URL_VAL="${APP_URL:-http://localhost}"

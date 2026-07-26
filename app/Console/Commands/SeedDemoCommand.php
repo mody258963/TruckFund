@@ -26,9 +26,9 @@ class SeedDemoCommand extends Command
         $this->seedSampleLead();
 
         $this->info('Demo data seeded.');
-        $this->line('  admin@truckfund.test / password (Admin)');
-        $this->line('  sales@truckfund.test / password (Sales)');
-        $this->line('  finance@truckfund.test / password (Finance)');
+        $this->line('  admin@testfund.test / password (Admin)');
+        $this->line('  sales@testfund.test / password (Sales)');
+        $this->line('  finance@testfund.test / password (Finance)');
 
         return self::SUCCESS;
     }
@@ -36,9 +36,9 @@ class SeedDemoCommand extends Command
     private function seedUsers(): void
     {
         $users = [
-            ['full_name' => 'Admin User', 'email' => 'admin@truckfund.test', 'role' => UserRole::Admin],
-            ['full_name' => 'Sales Agent', 'email' => 'sales@truckfund.test', 'role' => UserRole::SalesAgent],
-            ['full_name' => 'Finance Officer', 'email' => 'finance@truckfund.test', 'role' => UserRole::FinanceOfficer],
+            ['full_name' => 'Admin User', 'email' => 'admin@testfund.test', 'role' => UserRole::Admin],
+            ['full_name' => 'Sales Agent', 'email' => 'sales@testfund.test', 'role' => UserRole::SalesAgent],
+            ['full_name' => 'Finance Officer', 'email' => 'finance@testfund.test', 'role' => UserRole::FinanceOfficer],
         ];
 
         foreach ($users as $data) {

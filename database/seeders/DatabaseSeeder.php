@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
     private function seedUsers(): void
     {
         $admin = User::query()->updateOrCreate(
-            ['email' => 'admin@truckfund.test'],
+            ['email' => 'admin@testfund.test'],
             [
                 'full_name' => 'Admin User',
                 'role' => UserRole::Admin,
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $manager = User::query()->updateOrCreate(
-            ['email' => 'manager@truckfund.test'],
+            ['email' => 'manager@testfund.test'],
             [
                 'full_name' => 'CRM Manager',
                 'role' => UserRole::Manager,
@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
         );
 
         $tl = User::query()->updateOrCreate(
-            ['email' => 'tl@truckfund.test'],
+            ['email' => 'tl@testfund.test'],
             [
                 'full_name' => 'Team Leader',
                 'role' => UserRole::TeamLeader,
@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'sales@truckfund.test'],
+            ['email' => 'sales@testfund.test'],
             [
                 'full_name' => 'Sales One',
                 'role' => UserRole::SalesAgent,
@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'sales2@truckfund.test'],
+            ['email' => 'sales2@testfund.test'],
             [
                 'full_name' => 'Sales Two',
                 'role' => UserRole::SalesAgent,
@@ -83,7 +83,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'finance@truckfund.test'],
+            ['email' => 'finance@testfund.test'],
             [
                 'full_name' => 'Finance Officer',
                 'role' => UserRole::FinanceOfficer,
@@ -129,7 +129,7 @@ class DatabaseSeeder extends Seeder
 
     private function seedFreelancer(): void
     {
-        $admin = User::query()->where('email', 'admin@truckfund.test')->first();
+        $admin = User::query()->where('email', 'admin@testfund.test')->first();
 
         Freelancer::query()->firstOrCreate(
             ['phone' => '01009998877'],
@@ -148,8 +148,8 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        $sales = User::query()->where('email', 'sales@truckfund.test')->first();
-        $admin = User::query()->where('email', 'admin@truckfund.test')->first();
+        $sales = User::query()->where('email', 'sales@testfund.test')->first();
+        $admin = User::query()->where('email', 'admin@testfund.test')->first();
         $freelancer = Freelancer::query()->first();
 
         $leadService = app(LeadService::class);

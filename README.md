@@ -1,4 +1,4 @@
-# TruckFund
+# TestFund
 
 Laravel 12 internal operations platform for truck financing: lead management, customer onboarding, finance applications, and catalog administration.
 
@@ -44,9 +44,9 @@ php artisan serve
 
 | Email | Password | Role |
 |-------|----------|------|
-| admin@truckfund.test | password | Admin |
-| sales@truckfund.test | password | Sales |
-| finance@truckfund.test | password | Finance |
+| admin@testfund.test | password | Admin |
+| sales@testfund.test | password | Sales |
+| finance@testfund.test | password | Finance |
 
 ## Modules
 
@@ -106,7 +106,7 @@ Common mistakes:
 **Full Dokploy Environment (copy and fill values):**
 
 ```
-APP_NAME=TruckFund
+APP_NAME=TestFund
 APP_URL=https://your-domain.com
 APP_ENV=production
 APP_DEBUG=false
@@ -158,8 +158,8 @@ Mount a volume on `/var/www/html/storage/app` so uploaded documents survive rede
 ### Local Docker test
 
 ```bash
-docker build -t truckfund .
-docker run -p 8080:80 --env-file .env -e APP_KEY=base64:xxx truckfund
+docker build -t testfund .
+docker run -p 8080:80 --env-file .env -e APP_KEY=base64:xxx testfund
 ```
 
 Or: `docker compose up --build` (see `docker-compose.yml`).
