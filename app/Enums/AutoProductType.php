@@ -20,6 +20,9 @@ enum AutoProductType: int
     case Lowbed = 14;
     case FireTruck = 15;
     case RoadMaintenance = 16;
+    case Microbus = 17;
+    case Bus = 18;
+    case Loader = 19;
 
     public function label(): string
     {

@@ -10,7 +10,7 @@ return [
     'catalog' => 'Catalog',
     'merchants' => 'Merchants',
     'financial_products' => 'Financial Products',
-    'auto_products' => 'Trucks / Auto Products',
+    'auto_products' => 'Vehicles / Auto Products',
     'suppliers' => 'Suppliers',
     'settings' => 'Settings',
     'audit' => 'Audit Log',

@@ -72,5 +72,8 @@ return [
         'Lowbed' => 'Lowbed / heavy equipment',
         'FireTruck' => 'Fire truck',
         'RoadMaintenance' => 'Road maintenance truck',
+        'Microbus' => 'Microbus',
+        'Bus' => 'Bus',
+        'Loader' => 'Loader',
     ],
 ];

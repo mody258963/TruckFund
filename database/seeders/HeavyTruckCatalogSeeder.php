@@ -66,6 +66,12 @@ class HeavyTruckCatalogSeeder extends Seeder
             ['brand' => 'Isuzu', 'name' => 'FVR 34 Vacuum', 'type' => AutoProductType::SewageVacuum, 'model_year' => 2024, 'chassis' => 'EG-ISUZU-FVR34-2024-SV'],
             ['brand' => 'Mercedes-Benz', 'name' => 'Atego 1730 Fire', 'type' => AutoProductType::FireTruck, 'model_year' => 2024, 'chassis' => 'EG-MB-ATEGO-1730-2024-FI'],
             ['brand' => 'MAN', 'name' => 'TGS 26.400 Service', 'type' => AutoProductType::RoadMaintenance, 'model_year' => 2024, 'chassis' => 'EG-MAN-TGS26400-2024-RM'],
+            ['brand' => 'Toyota', 'name' => 'Coaster', 'type' => AutoProductType::Microbus, 'model_year' => 2025, 'chassis' => 'EG-TOYOTA-COASTER-2025-MB'],
+            ['brand' => 'King Long', 'name' => 'XMQ6706', 'type' => AutoProductType::Microbus, 'model_year' => 2024, 'chassis' => 'EG-KINGLONG-XMQ6706-2024-MB'],
+            ['brand' => 'Yutong', 'name' => 'ZK6122H', 'type' => AutoProductType::Bus, 'model_year' => 2025, 'chassis' => 'EG-YUTONG-ZK6122H-2025-BU'],
+            ['brand' => 'Golden Dragon', 'name' => 'XML6125', 'type' => AutoProductType::Bus, 'model_year' => 2024, 'chassis' => 'EG-GOLDENDRAGON-XML6125-2024-BU'],
+            ['brand' => 'SDLG', 'name' => 'L956F', 'type' => AutoProductType::Loader, 'model_year' => 2025, 'chassis' => 'EG-SDLG-L956F-2025-LD'],
+            ['brand' => 'XCMG', 'name' => 'LW500FN', 'type' => AutoProductType::Loader, 'model_year' => 2024, 'chassis' => 'EG-XCMG-LW500FN-2024-LD'],
         ];
     }
 }

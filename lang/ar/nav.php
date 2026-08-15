@@ -10,7 +10,7 @@ return [
     'catalog' => 'الكتالوج',
     'merchants' => 'جهات التمويل',
     'financial_products' => 'المنتجات المالية',
-    'auto_products' => 'الشاحنات',
+    'auto_products' => 'المركبات / المنتجات'
     'suppliers' => 'الموردون',
     'settings' => 'الإعدادات',
     'audit' => 'سجل التدقيق',
