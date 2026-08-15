@@ -55,4 +55,6 @@ return [
     'no_documents' => 'No documents uploaded yet.',
     'issue_date' => 'Issue date',
     'expiry_date' => 'Expiry date',
+    'delete' => 'Delete customer',
+    'delete_confirm' => 'Permanently delete this customer and all applications and documents? This action cannot be undone.',
 ];

@@ -1,11 +1,23 @@
 <div>
     <div class="mb-6 flex items-center justify-between">
         <flux:heading size="xl">{{ $lead->lead_number }}</flux:heading>
-        @if(!$lead->customer_id)
-        <flux:button wire:click="convert" variant="primary">{{ __('leads.convert') }}</flux:button>
-        @else
-        <flux:badge color="green">{{ __('leads.converted') }}</flux:badge>
-        @endif
+        <div class="flex items-center gap-2">
+            @if(!$lead->customer_id)
+                <flux:button wire:click="convert" variant="primary">{{ __('leads.convert') }}</flux:button>
+            @else
+                <flux:badge color="green">{{ __('leads.converted') }}</flux:badge>
+            @endif
+            @can('delete', $lead)
+                <flux:button
+                    wire:click="delete"
+                    wire:confirm="{{ __('leads.delete_confirm') }}"
+                    variant="danger"
+                    icon="trash"
+                >
+                    {{ __('leads.delete') }}
+                </flux:button>
+            @endcan
+        </div>
     </div>
     <div class="grid gap-6 lg:grid-cols-2">
         <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">

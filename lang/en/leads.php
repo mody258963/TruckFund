@@ -28,4 +28,6 @@ return [
     'ai_score' => 'AI score',
     'car_brand' => 'Truck brand',
     'price' => 'Price',
+    'delete' => 'Delete lead',
+    'delete_confirm' => 'Permanently delete this lead? This action cannot be undone.',
 ];

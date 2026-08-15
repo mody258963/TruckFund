@@ -98,6 +98,13 @@ class LeadShow extends Component
         $this->redirect(route('customers.onboarding', $customer), navigate: true);
     }
 
+    public function delete(LeadService $service): void
+    {
+        $this->authorize('delete', $this->lead);
+        $service->delete($this->lead);
+        $this->redirect(route('leads.index'), navigate: true);
+    }
+
     public function render(UserHierarchyService $hierarchy)
     {
         $user = auth()->user();

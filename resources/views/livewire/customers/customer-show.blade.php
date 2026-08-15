@@ -29,6 +29,16 @@
             <flux:button href="{{ route('customers.onboarding', $customer) }}" variant="{{ $customer->profile_completed ? 'ghost' : 'primary' }}">
                 {{ $customer->profile_completed ? __('customers.edit_profile') : __('customers.onboarding') }}
             </flux:button>
+            @can('delete', $customer)
+                <flux:button
+                    wire:click="delete"
+                    wire:confirm="{{ __('customers.delete_confirm') }}"
+                    variant="danger"
+                    icon="trash"
+                >
+                    {{ __('customers.delete') }}
+                </flux:button>
+            @endcan
         </div>
     </div>
 

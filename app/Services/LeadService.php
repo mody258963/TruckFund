@@ -110,6 +110,11 @@ class LeadService
         return $this->leads->update($lead, ['status' => $status]);
     }
 
+    public function delete(Lead $lead): void
+    {
+        $this->leads->delete($lead);
+    }
+
     public function convertToCustomer(Lead $lead): Customer
     {
         return DB::transaction(function () use ($lead) {

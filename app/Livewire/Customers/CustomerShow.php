@@ -5,6 +5,7 @@ namespace App\Livewire\Customers;
 use App\Contracts\Repositories\CustomerRepositoryInterface;
 use App\Models\Customer;
 use App\Models\FinanceApplication;
+use App\Services\CustomerService;
 use App\Services\FinanceApplicationService;
 use App\Services\ImageStorageService;
 use Livewire\Attributes\Layout;
@@ -34,6 +35,13 @@ class CustomerShow extends Component
         ]);
 
         $this->redirect(route('finance.show', $app), navigate: true);
+    }
+
+    public function delete(CustomerService $service): void
+    {
+        $this->authorize('delete', $this->customer);
+        $service->delete($this->customer);
+        $this->redirect(route('customers.index'), navigate: true);
     }
 
     public function render(ImageStorageService $images)

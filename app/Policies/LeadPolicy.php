@@ -41,6 +41,11 @@ class LeadPolicy
         );
     }
 
+    public function delete(User $user, Lead $lead): bool
+    {
+        return $user->isAdmin();
+    }
+
     public function assign(User $user, Lead $lead): bool
     {
         return $user->role->canAssignLeads() && $this->hierarchy->canViewLead($user, $lead);
