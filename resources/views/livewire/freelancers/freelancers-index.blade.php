@@ -38,7 +38,8 @@
         <form wire:submit="create" class="mt-4 space-y-4">
             <flux:input wire:model="full_name" label="{{ __('leads.customer') }}" required />
             <flux:input wire:model="phone" label="{{ __('leads.phone') }}" required />
-            <flux:input wire:model="national_id" label="{{ __('crm.freelancers.national_id') }}" />
+            <flux:input wire:model="national_id" label="{{ __('crm.freelancers.national_id') }}" maxlength="14" inputmode="numeric" />
+            <p class="text-xs text-zinc-500">{{ __('customers.id_number_hint') }}</p>
             <div class="flex justify-end gap-2">
                 <flux:button type="button" wire:click="$set('showCreate', false)" variant="ghost">{{ __('common.cancel') }}</flux:button>
                 <flux:button type="submit" variant="primary">{{ __('common.save') }}</flux:button>

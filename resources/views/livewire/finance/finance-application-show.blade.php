@@ -105,13 +105,13 @@
 
                 <form wire:submit="saveDraft" class="grid gap-4 md:grid-cols-2">
                     @if($wizardStep === 1)
-                        <flux:select wire:model="form.financial_merchant_id" label="{{ __('finance.merchant') }}" class="md:col-span-2">
+                        <flux:select wire:key="draft-merchant" wire:model="form.financial_merchant_id" label="{{ __('finance.merchant') }}" class="md:col-span-2">
                             <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
                             @foreach($merchants as $m)
                                 <flux:select.option value="{{ $m->merchant_id }}">{{ $m->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
-                        <flux:select wire:model="form.auto_product_id" label="{{ __('finance.truck') }}" class="md:col-span-2">
+                        <flux:select wire:key="draft-auto-product" wire:model="form.auto_product_id" label="{{ __('finance.truck') }}" class="md:col-span-2">
                             <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
                             @foreach($autoProducts as $t)
                                 <flux:select.option value="{{ $t->id }}">
@@ -120,18 +120,18 @@
                             @endforeach
                         </flux:select>
                     @elseif($wizardStep === 2)
-                        <flux:select wire:model="form.financial_product_id" label="{{ __('finance.product') }}" class="md:col-span-2">
+                        <flux:select wire:key="draft-financial-product" wire:model="form.financial_product_id" label="{{ __('finance.product') }}" class="md:col-span-2">
                             <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
                             @foreach($financialProducts as $p)
                                 <flux:select.option value="{{ $p->product_id }}">{{ $p->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
-                        <flux:input wire:model="form.total_truck_price" type="number" step="0.01" label="{{ __('finance.truck_price') }}" />
-                        <flux:input wire:model="form.down_payment" type="number" step="0.01" label="{{ __('finance.down_payment') }}" />
-                        <flux:input wire:model="form.total_loan_amount" type="number" step="0.01" label="{{ __('finance.loan_amount') }}" />
-                        <flux:input wire:model="form.monthly_income" type="number" step="0.01" label="{{ __('finance.monthly_income') }}" />
+                        <x-money-input input-key="draft-truck-price" model="form.total_truck_price" :value="$form['total_truck_price']" :label="__('finance.truck_price')" />
+                        <x-money-input input-key="draft-down-payment" model="form.down_payment" :value="$form['down_payment']" :label="__('finance.down_payment')" />
+                        <x-money-input input-key="draft-loan-amount" model="form.total_loan_amount" :value="$form['total_loan_amount']" :label="__('finance.loan_amount')" />
+                        <x-money-input input-key="draft-monthly-income" model="form.monthly_income" :value="$form['monthly_income']" :label="__('finance.monthly_income')" />
                     @else
-                        <flux:textarea wire:model="form.customer_comm_notes" label="{{ __('finance.comm_notes') }}" class="md:col-span-2" rows="4" />
+                        <flux:textarea wire:key="draft-comm-notes" wire:model="form.customer_comm_notes" label="{{ __('finance.comm_notes') }}" class="md:col-span-2" rows="4" />
                         <p class="md:col-span-2 text-xs text-zinc-500">{{ __('finance.draft.3.submit_hint') }}</p>
                     @endif
 
@@ -221,9 +221,10 @@
                         </dd>
                     </div>
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.product') }}</dt><dd class="text-end">{{ $application->financialProduct?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.truck_price') }}</dt><dd>{{ $application->total_truck_price ? number_format((float) $application->total_truck_price, 2) : '—' }}</dd></div>
-                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.down_payment') }}</dt><dd>{{ $application->down_payment ? number_format((float) $application->down_payment, 2) : '—' }}</dd></div>
-                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.loan_amount') }}</dt><dd class="font-medium">{{ $application->total_loan_amount ? number_format((float) $application->total_loan_amount, 2) : '—' }}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.truck_price') }}</dt><dd>{{ $application->total_truck_price !== null ? number_format((float) $application->total_truck_price, 2) : '—' }}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.down_payment') }}</dt><dd>{{ $application->down_payment !== null ? number_format((float) $application->down_payment, 2) : '—' }}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.loan_amount') }}</dt><dd class="font-medium">{{ $application->total_loan_amount !== null ? number_format((float) $application->total_loan_amount, 2) : '—' }}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.monthly_income') }}</dt><dd>{{ $application->monthly_income !== null ? number_format((float) $application->monthly_income, 2) : '—' }}</dd></div>
                     @if($application->booking_effective_date)
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.booking_date') }}</dt><dd>{{ $application->booking_effective_date->format('Y-m-d') }}</dd></div>
                     @endif

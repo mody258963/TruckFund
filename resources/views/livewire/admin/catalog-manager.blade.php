@@ -22,6 +22,8 @@
                     <td class="px-4 py-3 text-sm">
                         @if($routeName === 'auto-products' && $field === 'type')
                             {{ $item->type->label() }}
+                        @elseif($routeName === 'auto-products' && $field === 'price')
+                            {{ number_format((float) $item->price, 2) }}
                         @else
                             {{ $item->{$field} }}
                         @endif
@@ -67,6 +69,12 @@
                             rows="3"
                             class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                         ></textarea>
+                    @elseif($routeName === 'auto-products' && $field === 'price')
+                        <x-money-input
+                            model="form.price"
+                            :value="$form['price']"
+                            :input-key="'catalog-price-'.($showForm ? 'open' : 'closed').'-'.($editingId ?? 'new')"
+                        />
                     @else
                         <input
                             type="{{ $isNumeric ? 'number' : 'text' }}"
@@ -75,9 +83,11 @@
                             class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                         />
                     @endif
-                    @error('form.'.$field)
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    @unless($routeName === 'auto-products' && $field === 'price')
+                        @error('form.'.$field)
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    @endunless
                 </div>
             @endforeach
 

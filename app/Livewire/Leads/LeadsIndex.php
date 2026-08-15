@@ -54,6 +54,7 @@ class LeadsIndex extends Component
         $this->validate([
             'customer_name' => 'required|string|max:150',
             'phone' => 'nullable|string|max:20',
+            'price' => 'nullable|numeric|min:0',
         ]);
         $source = auth()->user()->isAdmin() ? LeadSource::AdminDashboard : LeadSource::SalesInput;
         $service->create([

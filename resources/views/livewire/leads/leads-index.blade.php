@@ -116,7 +116,7 @@
             <flux:input wire:model="phone" label="{{ __('leads.phone') }}" />
             <flux:input wire:model="email" type="email" label="{{ __('auth.email') }}" />
             <flux:input wire:model="car_brand" label="{{ __('leads.car_brand') }}" />
-            <flux:input wire:model="price" type="number" label="{{ __('leads.price') }}" />
+            <x-money-input model="price" :value="$price" :label="__('leads.price')" />
             @if($freelancers->isNotEmpty())
             <flux:select wire:model="freelancer_id" label="{{ __('crm.leads.reference') }}">
                 <flux:select.option value="">{{ __('common.none') }}</flux:select.option>

@@ -31,6 +31,9 @@ class FinancialData extends BaseUuidModel
     {
         return [
             'has_income_proof' => 'boolean',
+            'annual_sales_1yr' => 'decimal:2',
+            'annual_sales_2yr' => 'decimal:2',
+            'paid_in_capital' => 'decimal:2',
             'reg_start_date' => 'date',
             'reg_expiry_date' => 'date',
         ];

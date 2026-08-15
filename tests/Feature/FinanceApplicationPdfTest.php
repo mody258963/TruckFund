@@ -74,7 +74,7 @@ class FinanceApplicationPdfTest extends TestCase
         Identification::query()->create([
             'customer_id' => $customer->customer_id,
             'id_type' => 1,
-            'id_number' => '1234567890123',
+            'id_number' => '12345678901234',
             'name_en' => 'PDF Customer',
         ]);
 

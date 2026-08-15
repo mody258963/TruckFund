@@ -34,7 +34,7 @@ class FreelancersIndex extends Component
         $this->validate([
             'full_name' => 'required|string|max:150',
             'phone' => 'required|string|max:20',
-            'national_id' => 'nullable|string|max:50',
+            'national_id' => 'nullable|digits:14',
         ]);
         $service->create([
             'full_name' => $this->full_name,

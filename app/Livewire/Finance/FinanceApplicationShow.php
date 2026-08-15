@@ -57,11 +57,11 @@ class FinanceApplicationShow extends Component
     {
         return match ($this->wizardStep) {
             1 => [
-                'form.financial_merchant_id' => 'required|uuid',
-                'form.auto_product_id' => 'required|uuid',
+                'form.financial_merchant_id' => $this->merchantRules(),
+                'form.auto_product_id' => $this->autoProductRules(),
             ],
             2 => [
-                'form.financial_product_id' => 'required|uuid',
+                'form.financial_product_id' => $this->financialProductRules(),
                 'form.total_truck_price' => 'required|numeric|min:0',
                 'form.down_payment' => 'required|numeric|min:0',
                 'form.total_loan_amount' => 'required|numeric|min:0',
@@ -71,18 +71,43 @@ class FinanceApplicationShow extends Component
         };
     }
 
+    /** @return array<string, mixed> */
+    protected function completeDraftRules(): array
+    {
+        return [
+            'form.financial_merchant_id' => $this->merchantRules(),
+            'form.auto_product_id' => $this->autoProductRules(),
+            'form.financial_product_id' => $this->financialProductRules(),
+            'form.total_truck_price' => 'required|numeric|min:0',
+            'form.down_payment' => 'required|numeric|min:0',
+            'form.total_loan_amount' => 'required|numeric|min:0',
+            'form.monthly_income' => 'nullable|numeric|min:0',
+        ];
+    }
+
+    /** @return list<string> */
+    protected function merchantRules(): array
+    {
+        return ['required', 'uuid', 'exists:merchants,merchant_id'];
+    }
+
+    /** @return list<string> */
+    protected function autoProductRules(): array
+    {
+        return ['required', 'uuid', 'exists:auto_products,id'];
+    }
+
+    /** @return list<string> */
+    protected function financialProductRules(): array
+    {
+        return ['required', 'uuid', 'exists:financial_products,product_id'];
+    }
+
     public function saveDraft(FinanceApplicationService $service): void
     {
         $this->authorize('update', $this->application);
         if ($this->application->status === ApplicationStatus::Draft) {
-            $this->validate([
-                'form.financial_merchant_id' => 'required|uuid',
-                'form.auto_product_id' => 'required|uuid',
-                'form.financial_product_id' => 'required|uuid',
-                'form.total_truck_price' => 'required|numeric|min:0',
-                'form.down_payment' => 'required|numeric|min:0',
-                'form.total_loan_amount' => 'required|numeric|min:0',
-            ]);
+            $this->validate($this->completeDraftRules());
         }
         $this->application = $service->update($this->application, $this->form);
     }
@@ -90,14 +115,7 @@ class FinanceApplicationShow extends Component
     public function submitForReview(FinanceApplicationService $service): void
     {
         $this->authorize('update', $this->application);
-        $this->validate([
-            'form.financial_merchant_id' => 'required|uuid',
-            'form.auto_product_id' => 'required|uuid',
-            'form.financial_product_id' => 'required|uuid',
-            'form.total_truck_price' => 'required|numeric|min:0',
-            'form.down_payment' => 'required|numeric|min:0',
-            'form.total_loan_amount' => 'required|numeric|min:0',
-        ]);
+        $this->validate($this->completeDraftRules());
         $this->application = $service->update($this->application, $this->form);
         $this->application = $service->submitForReview($this->application);
         session()->flash('finance_pdf_ready', true);

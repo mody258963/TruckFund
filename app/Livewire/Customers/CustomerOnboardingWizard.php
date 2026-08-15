@@ -74,7 +74,7 @@ class CustomerOnboardingWizard extends Component
         if ($this->step === 2) {
             $maxKb = config('truckfund.image_max_kb', 2048);
             $rules = [
-                'form.id_number' => ['required', 'digits:13'],
+                'form.id_number' => ['required', 'digits:14'],
             ];
             if ($this->idFront) {
                 $rules['idFront'] = "image|max:{$maxKb}";
@@ -96,6 +96,9 @@ class CustomerOnboardingWizard extends Component
         if ($this->step === 5) {
             $maxKb = config('truckfund.image_max_kb', 2048);
             $this->validate([
+                'form.annual_sales_1yr' => 'nullable|numeric|min:0',
+                'form.annual_sales_2yr' => 'nullable|numeric|min:0',
+                'form.paid_in_capital' => 'nullable|numeric|min:0',
                 'incomeProofFile' => "nullable|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
                 'commercialRegFile' => "nullable|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
             ]);

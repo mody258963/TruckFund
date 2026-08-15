@@ -13,7 +13,7 @@
                 <flux:input wire:model="form.mobile_number" label="{{ __('customers.mobile') }}" class="mt-3" />
                 <flux:input wire:model="form.email" type="email" label="{{ __('auth.email') }}" class="mt-3" />
             @elseif($step === 2)
-                <flux:input wire:model="form.id_number" label="{{ __('customers.id_number') }}" maxlength="13" inputmode="numeric" />
+                <flux:input wire:model="form.id_number" label="{{ __('customers.id_number') }}" maxlength="14" inputmode="numeric" />
                 <p class="mt-1 text-xs text-zinc-500">{{ __('customers.id_number_hint') }}</p>
                 <flux:input wire:model="form.name_en" label="{{ __('customers.name_en') }}" class="mt-3" />
                 <flux:input wire:model="form.name_ar" label="{{ __('customers.name_ar') }}" class="mt-3" />
@@ -36,8 +36,8 @@
                 <p class="mb-4 text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('customers.financial_title') }}</p>
                 <flux:checkbox wire:model="form.has_income_proof" label="{{ __('customers.income_proof') }}" />
                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                    <flux:input wire:model="form.annual_sales_1yr" type="number" step="0.01" label="{{ __('customers.annual_sales_1yr') }}" />
-                    <flux:input wire:model="form.annual_sales_2yr" type="number" step="0.01" label="{{ __('customers.annual_sales_2yr') }}" />
+                    <x-money-input model="form.annual_sales_1yr" :value="$form['annual_sales_1yr']" :label="__('customers.annual_sales_1yr')" />
+                    <x-money-input model="form.annual_sales_2yr" :value="$form['annual_sales_2yr']" :label="__('customers.annual_sales_2yr')" />
                 </div>
                 <flux:input wire:model="form.org_name" label="{{ __('customers.org_name') }}" class="mt-3" />
                 <div class="mt-3 grid gap-3 sm:grid-cols-2">
@@ -48,7 +48,7 @@
                     <flux:input wire:model="form.reg_start_date" type="date" label="{{ __('customers.reg_start_date') }}" />
                     <flux:input wire:model="form.reg_expiry_date" type="date" label="{{ __('customers.reg_expiry_date') }}" />
                 </div>
-                <flux:input wire:model="form.paid_in_capital" type="number" step="0.01" label="{{ __('customers.paid_in_capital') }}" class="mt-3" />
+                <x-money-input model="form.paid_in_capital" :value="$form['paid_in_capital']" :label="__('customers.paid_in_capital')" class="mt-3" />
                 <flux:input wire:model="form.org_city" label="{{ __('customers.org_city') }}" class="mt-3" />
                 <flux:textarea wire:model="form.org_address" label="{{ __('customers.org_address') }}" class="mt-3" />
                 <div class="mt-6 space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-700">
