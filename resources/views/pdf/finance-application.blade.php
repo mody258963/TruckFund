@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
     <title>{{ $application->app_number }}</title>
@@ -12,6 +12,8 @@
             line-height: 1.45;
             margin: 0;
             padding: 24px;
+            direction: rtl;
+            text-align: right;
         }
         h1 {
             font-size: 20px;
@@ -59,24 +61,18 @@
         .money {
             font-family: DejaVu Sans Mono, monospace;
         }
-        .doc-block {
-            page-break-inside: avoid;
-            margin-bottom: 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 10px;
+        .attachment-page {
+            page-break-before: always;
+            text-align: center;
         }
         .doc-title {
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            text-align: right;
         }
         .doc-image {
             max-width: 100%;
-            max-height: 420px;
-        }
-        .doc-note {
-            color: #6b7280;
-            font-style: italic;
+            max-height: 245mm;
         }
         .footer {
             margin-top: 24px;
@@ -271,22 +267,15 @@
     @endif
     @endif
 
-    <h2>{{ __('finance.pdf_documents_section') }}</h2>
-    @forelse($attachments as $attachment)
-        <div class="doc-block">
-            <div class="doc-title">{{ $attachment['label'] }}</div>
-            @if($attachment['is_image'] && $attachment['data_uri'])
-                <img src="{{ $attachment['data_uri'] }}" class="doc-image" alt="{{ $attachment['label'] }}">
-            @else
-                <div class="doc-note">{{ __('finance.pdf_non_image_doc', ['file' => basename($attachment['path'])]) }}</div>
-            @endif
-        </div>
-    @empty
-        <p class="doc-note">{{ __('finance.no_documents') }}</p>
-    @endforelse
-
     <div class="footer">
         {{ config('app.name') }} — {{ __('finance.pdf_footer') }}
     </div>
+
+    @foreach($attachments as $attachment)
+        <div class="attachment-page">
+            <div class="doc-title">{{ $attachment['label'] }}</div>
+            <img src="{{ $attachment['data_uri'] }}" class="doc-image" alt="{{ $attachment['label'] }}">
+        </div>
+    @endforeach
 </body>
 </html>

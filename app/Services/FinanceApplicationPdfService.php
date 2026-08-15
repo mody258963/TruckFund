@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Contracts\Repositories\FinanceApplicationRepositoryInterface;
 use App\Models\FinanceApplication;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
 
 class FinanceApplicationPdfService
 {
@@ -31,7 +33,7 @@ class FinanceApplicationPdfService
             ?? abort(404);
     }
 
-    /** @return Collection<int, array{label: string, path: string, is_image: bool, data_uri: ?string}> */
+    /** @return Collection<int, array{label: string, path: string, type: 'image'|'pdf'|'unsupported', data_uri: ?string, absolute_path: ?string}> */
     public function collectAttachments(FinanceApplication $application): Collection
     {
         $attachments = collect();
@@ -59,35 +61,86 @@ class FinanceApplicationPdfService
             $attachments->push($this->attachmentEntry($doc->doc_type->label(), $doc->file_url));
         }
 
-        return $attachments->filter(fn (array $entry) => $entry['path'] !== '')->values();
+        return $attachments
+            ->filter(fn (array $entry) => $entry['type'] !== 'unsupported' && $entry['absolute_path'] !== null)
+            ->values();
     }
 
     public function download(FinanceApplication $application): Response
     {
-        $attachments = $this->collectAttachments($application);
-        $filename = $application->app_number.'-package.pdf';
+        $originalLocale = app()->getLocale();
 
-        return Pdf::loadView('pdf.finance-application', [
-            'application' => $application,
-            'customer' => $application->customer,
-            'attachments' => $attachments,
-            'generatedAt' => now(),
-        ])
-            ->setPaper('a4')
-            ->download($filename);
+        try {
+            app()->setLocale('ar');
+
+            $attachments = $this->collectAttachments($application);
+            $tempDirectory = storage_path('app/mpdf-temp');
+            File::ensureDirectoryExists($tempDirectory);
+
+            $pdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'tempDir' => $tempDirectory,
+                'default_font' => 'dejavusans',
+                'directionality' => 'rtl',
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+            ]);
+
+            $pdf->SetTitle($application->app_number);
+            $pdf->WriteHTML(view('pdf.finance-application', [
+                'application' => $application,
+                'customer' => $application->customer,
+                'attachments' => $attachments->where('type', 'image'),
+                'generatedAt' => now(),
+            ])->render());
+
+            $this->appendPdfAttachments($pdf, $attachments->where('type', 'pdf'));
+
+            $filename = $application->app_number.'-package.pdf';
+            $contents = $pdf->Output($filename, Destination::STRING_RETURN);
+
+            return response($contents, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+                'Content-Length' => (string) strlen($contents),
+            ]);
+        } finally {
+            app()->setLocale($originalLocale);
+        }
     }
 
-    /** @return array{label: string, path: string, is_image: bool, data_uri: ?string} */
+    /** @return array{label: string, path: string, type: 'image'|'pdf'|'unsupported', data_uri: ?string, absolute_path: ?string} */
     protected function attachmentEntry(string $label, ?string $path): array
     {
         $path = $path ?? '';
-        $isImage = $path !== '' && $this->images->isImagePath($path);
+        $absolutePath = $path !== '' ? $this->images->absolutePath($path) : null;
+        $type = match (true) {
+            $path !== '' && $this->images->isImagePath($path) => 'image',
+            (bool) preg_match('/\.pdf$/i', $path) => 'pdf',
+            default => 'unsupported',
+        };
 
         return [
             'label' => $label,
             'path' => $path,
-            'is_image' => $isImage,
-            'data_uri' => $isImage ? $this->images->dataUri($path) : null,
+            'type' => $type,
+            'data_uri' => $type === 'image' ? $this->images->dataUri($path) : null,
+            'absolute_path' => $absolutePath,
         ];
+    }
+
+    /** @param Collection<int, array{absolute_path: string}> $attachments */
+    protected function appendPdfAttachments(Mpdf $pdf, Collection $attachments): void
+    {
+        foreach ($attachments as $attachment) {
+            $pageCount = $pdf->setSourceFile($attachment['absolute_path']);
+
+            for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
+                $template = $pdf->importPage($pageNumber);
+                $pdf->AddPage();
+                $pdf->useTemplate($template, ['adjustPageSize' => true]);
+            }
+        }
     }
 }

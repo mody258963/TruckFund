@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DocType;
+use App\Models\ApplicationDocument;
 use App\Models\AutoProduct;
 use App\Models\Customer;
 use App\Models\FinancialProduct;
@@ -12,6 +14,9 @@ use App\Services\FinanceApplicationPdfService;
 use App\Services\FinanceApplicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
+use setasign\Fpdi\PdfParser\StreamReader;
 use Tests\TestCase;
 
 class FinanceApplicationPdfTest extends TestCase
@@ -71,11 +76,16 @@ class FinanceApplicationPdfTest extends TestCase
             'address' => '123 Main St',
         ]);
 
+        Storage::disk('documents')->put(
+            'customers/id-front.png',
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
+        );
         Identification::query()->create([
             'customer_id' => $customer->customer_id,
             'id_type' => 1,
             'id_number' => '12345678901234',
             'name_en' => 'PDF Customer',
+            'id_front_url' => 'customers/id-front.png',
         ]);
 
         $app = app(FinanceApplicationService::class)->createDraft([
@@ -90,6 +100,20 @@ class FinanceApplicationPdfTest extends TestCase
             'monthly_income' => 25000,
         ]);
 
+        $attachmentPdf = new Mpdf(['tempDir' => storage_path('framework/cache')]);
+        $attachmentPdf->WriteHTML('First attachment page<pagebreak />Second attachment page');
+        Storage::disk('documents')->put(
+            'applications/supporting-document.pdf',
+            $attachmentPdf->Output('', Destination::STRING_RETURN),
+        );
+        ApplicationDocument::query()->create([
+            'app_id' => $app->app_id,
+            'doc_type' => DocType::Other,
+            'file_url' => 'applications/supporting-document.pdf',
+            'uploaded_at' => now(),
+            'uploaded_by' => $user->user_id,
+        ]);
+
         $pdfService = app(FinanceApplicationPdfService::class);
         $this->assertTrue($pdfService->canGenerate($app));
 
@@ -97,5 +121,12 @@ class FinanceApplicationPdfTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
+
+        $generatedPdf = new Mpdf(['tempDir' => storage_path('framework/cache')]);
+        $pageCount = $generatedPdf->setSourceFile(
+            StreamReader::createByString($response->getContent()),
+        );
+
+        $this->assertGreaterThanOrEqual(4, $pageCount);
     }
 }

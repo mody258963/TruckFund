@@ -140,7 +140,7 @@ class FinanceApplicationShow extends Component
 
     public function uploadDoc(FinanceApplicationService $service): void
     {
-        $maxKb = config('truckfund.image_max_kb', 2048);
+        $maxKb = config('truckfund.document_max_kb', 10240);
         $this->validate(['acceptanceDoc' => "required|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf"]);
         $service->uploadDocument($this->application, $this->acceptanceDoc, DocType::AcceptancePaper, auth()->id());
         $this->application->refresh();

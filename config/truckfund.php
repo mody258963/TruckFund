@@ -7,6 +7,7 @@ return [
     'app_number_prefix' => env('TRUCKFUND_APP_PREFIX', 'FA'),
 
     'image_max_kb' => (int) env('TRUCKFUND_IMAGE_MAX_KB', 2048),
+    'document_max_kb' => (int) env('TRUCKFUND_DOCUMENT_MAX_KB', 10240),
     'image_max_width' => (int) env('TRUCKFUND_IMAGE_MAX_WIDTH', 1920),
     'image_jpeg_quality' => (int) env('TRUCKFUND_IMAGE_JPEG_QUALITY', 82),
     'storage_retention_months' => (int) env('TRUCKFUND_STORAGE_RETENTION_MONTHS', 6),
