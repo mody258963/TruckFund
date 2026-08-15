@@ -10,6 +10,7 @@ return [
     'id_number' => 'ID number',
     'id_number_hint' => 'Enter exactly 14 digits.',
     'id_number_invalid' => 'ID number must be exactly 14 digits.',
+    'id_number_taken' => 'This ID number is already registered to another customer.',
     'name_en' => 'Name (EN)',
     'name_ar' => 'Name (AR)',
     'id_front' => 'ID front',

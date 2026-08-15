@@ -195,12 +195,13 @@ class CustomerOnboardingService
     public function storeIdImage(Customer $customer, UploadedFile $file, string $side): void
     {
         $stored = $this->images->store($file, 'customers/'.$customer->customer_id.'/id');
-        $path = $stored['path'];
         $field = $side === 'back' ? 'id_back_url' : 'id_front_url';
+
+        // id_number is left untouched; it is unique, so a placeholder here would
+        // collide across customers. The number is saved by saveIdentification().
         Identification::query()->updateOrCreate(
             ['customer_id' => $customer->customer_id],
-            [$field => $path, 'id_type' => 1, 'id_number' => Identification::query()
-                ->where('customer_id', $customer->customer_id)->value('id_number') ?? 'PENDING']
+            [$field => $stored['path'], 'id_type' => 1],
         );
     }
 }

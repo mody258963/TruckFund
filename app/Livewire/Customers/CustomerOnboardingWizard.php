@@ -74,7 +74,12 @@ class CustomerOnboardingWizard extends Component
         if ($this->step === 2) {
             $maxKb = config('truckfund.image_max_kb', 2048);
             $rules = [
-                'form.id_number' => ['required', 'digits:14'],
+                'form.id_number' => [
+                    'required',
+                    'digits:14',
+                    Rule::unique('identifications', 'id_number')
+                        ->ignore($this->customer->customer_id, 'customer_id'),
+                ],
             ];
             if ($this->idFront) {
                 $rules['idFront'] = "image|max:{$maxKb}";
@@ -84,6 +89,7 @@ class CustomerOnboardingWizard extends Component
             }
             $this->validate($rules, [
                 'form.id_number.digits' => __('customers.id_number_invalid'),
+                'form.id_number.unique' => __('customers.id_number_taken'),
             ]);
             if ($this->idFront) {
                 $onboarding->storeIdImage($this->customer, $this->idFront, 'front');
@@ -104,7 +110,7 @@ class CustomerOnboardingWizard extends Component
             ]);
         }
 
-        if ($this->step === 6 && $this->extraDocFile) {
+        if ($this->step === 6 && $this->extraDocFiles !== []) {
             $this->uploadExtraDocument($onboarding);
         }
 
