@@ -72,8 +72,15 @@ class LeadRepository extends EloquentRepository implements LeadRepositoryInterfa
     public function generateLeadNumber(): string
     {
         $prefix = config('truckfund.lead_number_prefix', 'LD');
-        $seq = str_pad((string) ($this->query()->count() + 1), 6, '0', STR_PAD_LEFT);
+        $datedPrefix = $prefix.'-'.date('Ymd').'-';
+        $lastNumber = $this->query()
+            ->where('lead_number', 'like', $datedPrefix.'%')
+            ->max('lead_number');
+        $lastSequence = $lastNumber
+            ? (int) substr($lastNumber, strlen($datedPrefix))
+            : 0;
+        $seq = str_pad((string) ($lastSequence + 1), 6, '0', STR_PAD_LEFT);
 
-        return $prefix.'-'.date('Ymd').'-'.$seq;
+        return $datedPrefix.$seq;
     }
 }

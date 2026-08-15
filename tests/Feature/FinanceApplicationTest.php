@@ -159,4 +159,29 @@ class FinanceApplicationTest extends TestCase
 
         $this->assertCount(0, $app->fresh()->applicationDocuments);
     }
+
+    public function test_application_number_is_not_reused_after_a_deletion(): void
+    {
+        $user = User::factory()->financeOfficer()->create();
+        $customer = Customer::query()->create([
+            'display_name' => 'Numbering Test',
+            'mobile_number' => '01009998878',
+        ]);
+        $service = app(FinanceApplicationService::class);
+        $data = [
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'down_payment' => 0,
+            'total_loan_amount' => 0,
+            'total_truck_price' => 0,
+        ];
+
+        $first = $service->createDraft($data);
+        $second = $service->createDraft($data);
+        $first->delete();
+        $third = $service->createDraft($data);
+
+        $this->assertStringEndsWith('-000002', $second->app_number);
+        $this->assertStringEndsWith('-000003', $third->app_number);
+    }
 }

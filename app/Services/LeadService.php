@@ -8,6 +8,7 @@ use App\Enums\LeadStatus;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -28,16 +29,26 @@ class LeadService
 
         $creator ??= auth()->user();
 
-        return $this->leads->create([
-            ...$data,
-            'lead_number' => $this->leads->generateLeadNumber(),
-            'status' => LeadStatus::New,
-            'source' => $data['source'] ?? $source,
-            'created_by_user_id' => $creator?->user_id,
-            'ai_score' => $score,
-            'value' => $value,
-            'is_priority' => $this->scoring->isPriority($score),
-        ]);
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                return $this->leads->create([
+                    ...$data,
+                    'lead_number' => $this->leads->generateLeadNumber(),
+                    'status' => LeadStatus::New,
+                    'source' => $data['source'] ?? $source,
+                    'created_by_user_id' => $creator?->user_id,
+                    'ai_score' => $score,
+                    'value' => $value,
+                    'is_priority' => $this->scoring->isPriority($score),
+                ]);
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($attempt === 3) {
+                    throw $exception;
+                }
+            }
+        }
+
+        throw new \LogicException('Unable to generate a lead number.');
     }
 
     public function update(Lead $lead, array $data): Lead

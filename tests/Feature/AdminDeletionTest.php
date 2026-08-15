@@ -60,6 +60,20 @@ class AdminDeletionTest extends TestCase
         $this->assertDatabaseHas('leads', ['lead_id' => $lead->lead_id]);
     }
 
+    public function test_lead_number_is_not_reused_after_a_deletion(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $service = app(LeadService::class);
+
+        $first = $service->create(['customer_name' => 'First'], $admin);
+        $second = $service->create(['customer_name' => 'Second'], $admin);
+        $service->delete($first);
+        $third = $service->create(['customer_name' => 'Third'], $admin);
+
+        $this->assertStringEndsWith('-000002', $second->lead_number);
+        $this->assertStringEndsWith('-000003', $third->lead_number);
+    }
+
     public function test_admin_can_delete_customer_records_and_stored_files(): void
     {
         Storage::fake('documents');

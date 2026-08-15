@@ -8,6 +8,7 @@ use App\Enums\DocType;
 use App\Jobs\RunCreditChecksJob;
 use App\Models\ApplicationDocument;
 use App\Models\FinanceApplication;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 
 class FinanceApplicationService
@@ -20,11 +21,21 @@ class FinanceApplicationService
 
     public function createDraft(array $data): FinanceApplication
     {
-        return $this->applications->create([
-            ...$data,
-            'app_number' => $this->applications->generateAppNumber(),
-            'status' => ApplicationStatus::Draft,
-        ]);
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                return $this->applications->create([
+                    ...$data,
+                    'app_number' => $this->applications->generateAppNumber(),
+                    'status' => ApplicationStatus::Draft,
+                ]);
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($attempt === 3) {
+                    throw $exception;
+                }
+            }
+        }
+
+        throw new \LogicException('Unable to generate a finance application number.');
     }
 
     public function update(FinanceApplication $app, array $data): FinanceApplication
