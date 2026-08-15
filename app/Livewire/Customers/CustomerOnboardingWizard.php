@@ -131,7 +131,7 @@ class CustomerOnboardingWizard extends Component
         }
 
         if ($this->step === 6) {
-            $this->reset('extraDocFile');
+            $this->reset('extraDocFiles');
         }
 
         $this->customer->refresh();

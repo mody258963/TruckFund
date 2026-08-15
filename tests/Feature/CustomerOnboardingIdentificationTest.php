@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\Customers\CustomerOnboardingWizard;
 use App\Models\Customer;
+use App\Models\Document;
 use App\Models\Identification;
 use App\Models\User;
 use App\Services\CustomerOnboardingService;
@@ -97,6 +98,50 @@ class CustomerOnboardingIdentificationTest extends TestCase
 
         $this->assertSame('99887766554433', $identification->id_number);
         $this->assertNotNull($identification->id_front_url);
+    }
+
+    public function test_final_step_completes_without_extra_documents(): void
+    {
+        Storage::fake('documents');
+
+        $this->actingAs(User::factory()->create());
+
+        $customer = Customer::query()->create([
+            'display_name' => 'Finishing Customer',
+            'mobile_number' => '01000000004',
+            'onboarding_step' => CustomerOnboardingService::TOTAL_STEPS,
+        ]);
+
+        Livewire::test(CustomerOnboardingWizard::class, ['customer' => $customer])
+            ->call('saveStep')
+            ->assertHasNoErrors();
+
+        $this->assertTrue($customer->fresh()->profile_completed);
+    }
+
+    public function test_final_step_stores_several_extra_documents(): void
+    {
+        Storage::fake('documents');
+
+        $this->actingAs(User::factory()->create());
+
+        $customer = Customer::query()->create([
+            'display_name' => 'Documents Customer',
+            'mobile_number' => '01000000005',
+            'onboarding_step' => CustomerOnboardingService::TOTAL_STEPS,
+        ]);
+
+        Livewire::test(CustomerOnboardingWizard::class, ['customer' => $customer])
+            ->set('extraDocFiles', [
+                UploadedFile::fake()->create('land-contract.pdf', 40, 'application/pdf'),
+                UploadedFile::fake()->create('acceptance.jpg', 40, 'image/jpeg'),
+            ])
+            ->call('saveStep')
+            ->assertHasNoErrors()
+            ->assertSet('extraDocFiles', []);
+
+        $this->assertSame(2, Document::query()->where('customer_id', $customer->customer_id)->count());
+        $this->assertTrue($customer->fresh()->profile_completed);
     }
 
     private function fakeIdPhoto(): UploadedFile
