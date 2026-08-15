@@ -7,6 +7,7 @@ use App\Models\FinanceApplication;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
 
@@ -33,7 +34,7 @@ class FinanceApplicationPdfService
             ?? abort(404);
     }
 
-    /** @return Collection<int, array{label: string, path: string, type: 'image'|'pdf'|'unsupported', data_uri: ?string, absolute_path: ?string}> */
+    /** @return Collection<int, array{label: string, path: string, type: 'image'|'pdf'|'unsupported', absolute_path: ?string}> */
     public function collectAttachments(FinanceApplication $application): Collection
     {
         $attachments = collect();
@@ -88,13 +89,23 @@ class FinanceApplicationPdfService
             ]);
 
             $pdf->SetTitle($application->app_number);
-            $pdf->WriteHTML(view('pdf.finance-application', [
-                'application' => $application,
-                'customer' => $application->customer,
-                'attachments' => $attachments->where('type', 'image'),
-                'generatedAt' => now(),
-            ])->render());
 
+            // Each chunk is written separately so no single string approaches
+            // pcre.backtrack_limit, which mPDF's HTML parser is bound by.
+            $pdf->WriteHTML(
+                view('pdf.finance-application-styles')->render(),
+                HTMLParserMode::HEADER_CSS,
+            );
+            $pdf->WriteHTML(
+                view('pdf.finance-application', [
+                    'application' => $application,
+                    'customer' => $application->customer,
+                    'generatedAt' => now(),
+                ])->render(),
+                HTMLParserMode::HTML_BODY,
+            );
+
+            $this->appendImageAttachments($pdf, $attachments->where('type', 'image'));
             $this->appendPdfAttachments($pdf, $attachments->where('type', 'pdf'));
 
             $filename = $application->app_number.'-package.pdf';
@@ -110,11 +121,10 @@ class FinanceApplicationPdfService
         }
     }
 
-    /** @return array{label: string, path: string, type: 'image'|'pdf'|'unsupported', data_uri: ?string, absolute_path: ?string} */
+    /** @return array{label: string, path: string, type: 'image'|'pdf'|'unsupported', absolute_path: ?string} */
     protected function attachmentEntry(string $label, ?string $path): array
     {
         $path = $path ?? '';
-        $absolutePath = $path !== '' ? $this->images->absolutePath($path) : null;
         $type = match (true) {
             $path !== '' && $this->images->isImagePath($path) => 'image',
             (bool) preg_match('/\.pdf$/i', $path) => 'pdf',
@@ -125,9 +135,20 @@ class FinanceApplicationPdfService
             'label' => $label,
             'path' => $path,
             'type' => $type,
-            'data_uri' => $type === 'image' ? $this->images->dataUri($path) : null,
-            'absolute_path' => $absolutePath,
+            'absolute_path' => $path !== '' ? $this->images->absolutePath($path) : null,
         ];
+    }
+
+    /** @param Collection<int, array{label: string, absolute_path: string}> $attachments */
+    protected function appendImageAttachments(Mpdf $pdf, Collection $attachments): void
+    {
+        foreach ($attachments as $attachment) {
+            $pdf->AddPage();
+            $pdf->WriteHTML(
+                view('pdf.finance-application-attachment', ['attachment' => $attachment])->render(),
+                HTMLParserMode::HTML_BODY,
+            );
+        }
     }
 
     /** @param Collection<int, array{absolute_path: string}> $attachments */

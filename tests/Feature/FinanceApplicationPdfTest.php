@@ -76,10 +76,7 @@ class FinanceApplicationPdfTest extends TestCase
             'address' => '123 Main St',
         ]);
 
-        Storage::disk('documents')->put(
-            'customers/id-front.png',
-            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='),
-        );
+        Storage::disk('documents')->put('customers/id-front.png', $this->largePngBytes());
         Identification::query()->create([
             'customer_id' => $customer->customer_id,
             'id_type' => 1,
@@ -128,5 +125,36 @@ class FinanceApplicationPdfTest extends TestCase
         );
 
         $this->assertGreaterThanOrEqual(4, $pageCount);
+    }
+
+    /**
+     * A truecolor PNG of random noise, built without ext-gd. Noise compresses
+     * poorly, so the file exceeds pcre.backtrack_limit once base64 encoded.
+     */
+    private function largePngBytes(): string
+    {
+        $width = 700;
+        $height = 700;
+
+        $raw = '';
+        for ($row = 0; $row < $height; $row++) {
+            $raw .= "\x00".random_bytes($width * 3);
+        }
+
+        $header = pack('NNCCCCC', $width, $height, 8, 2, 0, 0, 0);
+
+        $bytes = "\x89PNG\r\n\x1a\n"
+            .$this->pngChunk('IHDR', $header)
+            .$this->pngChunk('IDAT', (string) gzcompress($raw))
+            .$this->pngChunk('IEND', '');
+
+        $this->assertGreaterThan(1000000, strlen(base64_encode($bytes)));
+
+        return $bytes;
+    }
+
+    private function pngChunk(string $type, string $data): string
+    {
+        return pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
     }
 }
