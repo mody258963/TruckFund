@@ -1,4 +1,4 @@
-# TestFund CRM hierarchy
+# AutoFund CRM hierarchy
 
 ## Roles
 
@@ -26,7 +26,7 @@ A user sees a lead if they are **Admin**, or the lead is assigned to themselves 
 
 - `0` Admin dashboard  
 - `1` Sales input  
-- `2` External API (`POST /api/leads` with `Authorization: Bearer {TestFund_API_TOKEN}`)
+- `2` External API (`POST /api/leads` with `Authorization: Bearer {TRUCKFUND_API_TOKEN}`)
 - `3` Referral (freelancer-linked)  
 - `4` Import  
 
@@ -45,7 +45,7 @@ External referrers without login. Locked after create; only Admin can edit.
 
 | Email | Password | Role |
 |-------|----------|------|
-| aiman@truckfund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
-| mohammed@truckfund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
+| aiman@autofund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
+| mohammed@autofund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
 
 Passwords are read from `config/truckfund.php` and can be overridden with `TRUCKFUND_SEED_AIMAN_PASSWORD` / `TRUCKFUND_SEED_MOHAMMED_PASSWORD`. The seeder creates no merchants, financial products, freelancers or leads — only these users and the truck catalog.

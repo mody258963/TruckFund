@@ -43,8 +43,8 @@ RUN npm run build
 # ------------------------------------------------------------------------------
 FROM php:8.3-fpm-alpine AS production
 
-LABEL org.opencontainers.image.title="TestFund"
-LABEL org.opencontainers.image.description="Laravel TestFund application"
+LABEL org.opencontainers.image.title="AutoFund"
+LABEL org.opencontainers.image.description="Laravel AutoFund application"
 
 RUN apk add --no-cache \
     nginx \

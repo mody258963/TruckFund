@@ -1,4 +1,4 @@
-# Deploy TestFund on Dokploy
+# Deploy AutoFund on Dokploy
 
 ## Why you see 502 / crash loop
 
@@ -81,8 +81,8 @@ Default logins after seeding:
 
 | Email | Password | Role |
 |-------|----------|------|
-| `aiman@truckfund.test` | `Ay#7mNq4Zt$Rv2Kx` | Admin |
-| `mohammed@truckfund.test` | `Mh$9dRk6Xw#Pb3Tq` | Admin |
+| `aiman@autofund.test` | `Ay#7mNq4Zt$Rv2Kx` | Admin |
+| `mohammed@autofund.test` | `Mh$9dRk6Xw#Pb3Tq` | Admin |
 
 Set `TRUCKFUND_SEED_AIMAN_PASSWORD` and `TRUCKFUND_SEED_MOHAMMED_PASSWORD` in the Dokploy environment before seeding to use your own passwords.
 
@@ -147,7 +147,7 @@ The browser loads the page over **HTTPS** but Laravel emitted asset URLs as **HT
 
 **Fix in Dokploy Environment:**
 
-1. Set `APP_URL` to your **HTTPS** URL, e.g. `https://truckfund-truck-fund-epb8fr-c25c32-72-62-16-40.sslip.io` (no trailing slash).
+1. Set `APP_URL` to your **HTTPS** URL, e.g. `https://autofund.example.com` (no trailing slash).
 2. Redeploy after saving (config is cached on boot).
 3. Optional: `ASSET_URL` — same as `APP_URL` (entrypoint sets it automatically).
 4. `APP_FORCE_HTTPS=true` (default in production via entrypoint).

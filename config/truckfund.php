@@ -16,12 +16,12 @@ return [
     'seed_admins' => [
         [
             'full_name' => 'Aiman',
-            'email' => env('TRUCKFUND_SEED_AIMAN_EMAIL', 'aiman@truckfund.test'),
+            'email' => env('TRUCKFUND_SEED_AIMAN_EMAIL', 'aiman@autofund.test'),
             'password' => env('TRUCKFUND_SEED_AIMAN_PASSWORD', 'Ay#7mNq4Zt$Rv2Kx'),
         ],
         [
             'full_name' => 'Mohammed',
-            'email' => env('TRUCKFUND_SEED_MOHAMMED_EMAIL', 'mohammed@truckfund.test'),
+            'email' => env('TRUCKFUND_SEED_MOHAMMED_EMAIL', 'mohammed@autofund.test'),
             'password' => env('TRUCKFUND_SEED_MOHAMMED_PASSWORD', 'Mh$9dRk6Xw#Pb3Tq'),
         ],
     ],

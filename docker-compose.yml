@@ -9,7 +9,7 @@ services:
     ports:
       - "8080:80"
     environment:
-      APP_NAME: TestFund
+      APP_NAME: AutoFund
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: http://localhost:8080

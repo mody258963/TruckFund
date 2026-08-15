@@ -30,12 +30,17 @@ class LegacyDemoDataSeeder extends Seeder
             'admin@truckfund.test',
             'sales@truckfund.test',
             'finance@truckfund.test',
+            'aiman@truckfund.test',
+            'mohammed@truckfund.test',
             'admin@TestFund.test',
             'manager@TestFund.test',
             'tl@TestFund.test',
             'sales@TestFund.test',
             'sales2@TestFund.test',
             'finance@TestFund.test',
+            'admin@autofund.test',
+            'sales@autofund.test',
+            'finance@autofund.test',
         ])->delete();
     }
 }
