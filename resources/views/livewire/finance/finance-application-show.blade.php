@@ -189,8 +189,20 @@
                 <flux:heading size="lg" class="mb-2">{{ __('finance.docs_section') }}</flux:heading>
                 <p class="mb-4 text-sm text-zinc-600 dark:text-zinc-400">{{ __('finance.docs_hint') }}</p>
                 <form wire:submit="uploadDoc" class="space-y-3">
-                    <x-wire-file-input wire:model="acceptanceDoc" accept="image/*,application/pdf" :label="__('finance.acceptance_doc')" />
-                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="acceptanceDoc,uploadDoc">{{ __('common.upload') }}</flux:button>
+                    <x-wire-file-input
+                        wire:model="acceptanceDocs"
+                        multiple
+                        accept="image/*,application/pdf"
+                        :label="__('finance.acceptance_doc')"
+                    />
+                    @error('acceptanceDocs')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                    @foreach($acceptanceDocs as $index => $doc)
+                        <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                            {{ $doc->getClientOriginalName() }}
+                            @error('acceptanceDocs.'.$index)<span class="text-red-600">— {{ $message }}</span>@enderror
+                        </p>
+                    @endforeach
+                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="acceptanceDocs,uploadDoc">{{ __('common.upload') }}</flux:button>
                 </form>
             </div>
             @endif

@@ -33,7 +33,7 @@ class CustomerOnboardingWizard extends Component
 
     public $commercialRegFile;
 
-    public $extraDocFile;
+    public array $extraDocFiles = [];
 
     public int $extraDocType = DocType::Other->value;
 
@@ -139,17 +139,22 @@ class CustomerOnboardingWizard extends Component
 
     public function uploadExtraDocument(CustomerOnboardingService $onboarding): void
     {
-        $maxKb = config('truckfund.image_max_kb', 2048);
+        $maxKb = config('truckfund.document_max_kb', 10240);
         $allowedTypes = array_map(fn (DocType $t) => $t->value, CustomerOnboardingService::EXTRA_DOC_TYPES);
 
         $this->validate([
-            'extraDocFile' => "required|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
+            'extraDocFiles' => 'required|array|min:1|max:20',
+            'extraDocFiles.*' => "file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
             'extraDocType' => ['required', 'integer', Rule::in($allowedTypes)],
         ]);
 
         $type = DocType::from($this->extraDocType);
-        $onboarding->storeUpload($this->customer, $this->extraDocFile, $type);
-        $this->reset('extraDocFile');
+
+        foreach ($this->extraDocFiles as $file) {
+            $onboarding->storeUpload($this->customer, $file, $type);
+        }
+
+        $this->reset('extraDocFiles');
         $this->customer->refresh();
         $this->customer->load('documents');
     }

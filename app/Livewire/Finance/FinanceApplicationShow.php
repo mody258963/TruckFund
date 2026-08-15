@@ -26,7 +26,7 @@ class FinanceApplicationShow extends Component
 
     public array $form = [];
 
-    public $acceptanceDoc;
+    public array $acceptanceDocs = [];
 
     public ?string $bookingDate = null;
 
@@ -141,10 +141,14 @@ class FinanceApplicationShow extends Component
     public function uploadDoc(FinanceApplicationService $service): void
     {
         $maxKb = config('truckfund.document_max_kb', 10240);
-        $this->validate(['acceptanceDoc' => "required|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf"]);
-        $service->uploadDocument($this->application, $this->acceptanceDoc, DocType::AcceptancePaper, auth()->id());
+        $this->validate([
+            'acceptanceDocs' => 'required|array|min:1|max:20',
+            'acceptanceDocs.*' => "file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
+        ]);
+        $service->uploadDocuments($this->application, $this->acceptanceDocs, DocType::AcceptancePaper, auth()->id());
         $this->application->refresh();
-        $this->acceptanceDoc = null;
+        $this->application->load('applicationDocuments');
+        $this->reset('acceptanceDocs');
     }
 
     public function complete(FinanceApplicationService $service): void

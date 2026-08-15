@@ -11,6 +11,8 @@ use App\Models\Merchant;
 use App\Models\User;
 use App\Services\FinanceApplicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -92,5 +94,69 @@ class FinanceApplicationTest extends TestCase
             ->assertHasErrors(['form.financial_merchant_id' => 'exists']);
 
         $this->assertNull($app->fresh()->financial_merchant_id);
+    }
+
+    public function test_several_acceptance_documents_upload_in_one_submission(): void
+    {
+        Storage::fake('documents');
+
+        $user = User::factory()->financeOfficer()->create();
+        $this->actingAs($user);
+
+        $customer = Customer::query()->create([
+            'display_name' => 'Finance Test',
+            'mobile_number' => '01009998877',
+        ]);
+
+        $app = app(FinanceApplicationService::class)->createDraft([
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'down_payment' => 100000,
+            'total_loan_amount' => 500000,
+            'total_truck_price' => 600000,
+        ]);
+
+        Livewire::test(FinanceApplicationShow::class, ['application' => $app])
+            ->set('acceptanceDocs', [
+                UploadedFile::fake()->create('acceptance-1.jpg', 100, 'image/jpeg'),
+                UploadedFile::fake()->create('acceptance-2.png', 100, 'image/png'),
+                UploadedFile::fake()->create('acceptance-3.pdf', 100, 'application/pdf'),
+            ])
+            ->call('uploadDoc')
+            ->assertHasNoErrors();
+
+        $this->assertCount(3, $app->fresh()->applicationDocuments);
+        $this->assertEquals(ApplicationStatus::DocsUploaded, $app->fresh()->status);
+    }
+
+    public function test_acceptance_document_upload_rejects_unsupported_file_type(): void
+    {
+        Storage::fake('documents');
+
+        $user = User::factory()->financeOfficer()->create();
+        $this->actingAs($user);
+
+        $customer = Customer::query()->create([
+            'display_name' => 'Finance Test',
+            'mobile_number' => '01009998877',
+        ]);
+
+        $app = app(FinanceApplicationService::class)->createDraft([
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'down_payment' => 100000,
+            'total_loan_amount' => 500000,
+            'total_truck_price' => 600000,
+        ]);
+
+        Livewire::test(FinanceApplicationShow::class, ['application' => $app])
+            ->set('acceptanceDocs', [
+                UploadedFile::fake()->create('acceptance-1.jpg', 100, 'image/jpeg'),
+                UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+            ])
+            ->call('uploadDoc')
+            ->assertHasErrors('acceptanceDocs.1');
+
+        $this->assertCount(0, $app->fresh()->applicationDocuments);
     }
 }

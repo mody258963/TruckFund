@@ -40,7 +40,7 @@ return [
     'booking_section' => 'Truck booking',
     'booking_hint' => 'The application was accepted. Enter the effective booking date to move to the next step.',
     'docs_section' => 'Acceptance documents',
-    'docs_hint' => 'Upload the signed acceptance paper (image or PDF). This moves the application to “Documents uploaded”.',
+    'docs_hint' => 'Upload the signed acceptance papers (images or PDFs). You can select several files at once. This moves the application to “Documents uploaded”.',
     'complete_section' => 'Finalize',
     'complete_hint' => 'All documents are in place. Mark the application as completed to close the case.',
     'pipeline' => [

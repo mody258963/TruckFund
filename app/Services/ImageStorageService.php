@@ -14,17 +14,22 @@ class ImageStorageService
     /** @return array{path: string, mime: string, bytes: int} */
     public function store(UploadedFile $file, string $directory): array
     {
-        $maxBytes = config('truckfund.image_max_kb', 2048) * 1024;
+        $uploadMaxKb = $this->documentMaxKb();
 
-        if ($file->getSize() > $maxBytes) {
+        if ($file->getSize() > $uploadMaxKb * 1024) {
             throw ValidationException::withMessages([
-                'file' => __('settings.image_too_large', ['max' => config('truckfund.image_max_kb', 2048)]),
+                'file' => __('settings.file_too_large', ['max' => $uploadMaxKb]),
             ]);
         }
 
         if (! $this->isImage($file)) {
-            return $this->storeBinary($file, $directory, $maxBytes);
+            return $this->storeBinary($file, $directory);
         }
+
+        // Large photos are accepted and downscaled; the stored result is what
+        // has to fit within the image budget.
+        $maxKb = $this->imageMaxKb();
+        $maxBytes = $maxKb * 1024;
 
         $optimized = $this->optimizeImage($file, $maxBytes);
         $relativeDir = trim($directory, '/');
@@ -36,7 +41,7 @@ class ImageStorageService
         if (strlen($optimized['contents']) > $maxBytes) {
             Storage::disk(self::DISK)->delete($path);
             throw ValidationException::withMessages([
-                'file' => __('settings.image_too_large', ['max' => config('truckfund.image_max_kb', 2048)]),
+                'file' => __('settings.image_too_large', ['max' => $maxKb]),
             ]);
         }
 
@@ -88,15 +93,19 @@ class ImageStorageService
         return in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true);
     }
 
-    /** @return array{path: string, mime: string, bytes: int} */
-    protected function storeBinary(UploadedFile $file, string $directory, int $maxBytes): array
+    protected function imageMaxKb(): int
     {
-        if ($file->getSize() > $maxBytes) {
-            throw ValidationException::withMessages([
-                'file' => __('settings.file_too_large', ['max' => config('truckfund.image_max_kb', 2048)]),
-            ]);
-        }
+        return (int) config('truckfund.image_max_kb', 2048);
+    }
 
+    protected function documentMaxKb(): int
+    {
+        return (int) config('truckfund.document_max_kb', 10240);
+    }
+
+    /** @return array{path: string, mime: string, bytes: int} */
+    protected function storeBinary(UploadedFile $file, string $directory): array
+    {
         $path = $file->store(trim($directory, '/'), self::DISK);
 
         return [

@@ -83,6 +83,22 @@ class FinanceApplicationService
         return $doc;
     }
 
+    /**
+     * @param  list<UploadedFile>  $files
+     * @return list<ApplicationDocument>
+     */
+    public function uploadDocuments(
+        FinanceApplication $app,
+        array $files,
+        DocType $type,
+        ?string $userId = null
+    ): array {
+        return array_map(
+            fn (UploadedFile $file) => $this->uploadDocument($app, $file, $type, $userId),
+            array_values($files),
+        );
+    }
+
     public function complete(FinanceApplication $app): FinanceApplication
     {
         return $this->applications->update($app, ['status' => ApplicationStatus::Completed]);

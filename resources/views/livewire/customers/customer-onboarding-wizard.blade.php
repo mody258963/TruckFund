@@ -72,18 +72,30 @@
                 </div>
             @elseif($step === 6)
                 <p class="mb-4 text-sm text-zinc-500">{{ __('customers.extra_docs_hint') }}</p>
-                <p class="mb-2 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('truckfund.image_max_kb', 2048)]) }}</p>
+                <p class="mb-2 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('truckfund.document_max_kb', 10240)]) }}</p>
                 <flux:select wire:model="extraDocType" label="{{ __('customers.extra_doc_type') }}">
                     @foreach($extraDocTypes as $type)
                         <flux:select.option value="{{ $type->value }}">{{ $type->label() }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <x-wire-file-input wire:model="extraDocFile" accept="image/*,application/pdf" :label="__('customers.extra_doc_file')" />
+                <x-wire-file-input
+                    wire:model="extraDocFiles"
+                    multiple
+                    accept="image/*,application/pdf"
+                    :label="__('customers.extra_doc_file')"
+                />
+                @error('extraDocFiles')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                @foreach($extraDocFiles as $index => $file)
+                    <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                        {{ $file->getClientOriginalName() }}
+                        @error('extraDocFiles.'.$index)<span class="text-red-600">— {{ $message }}</span>@enderror
+                    </p>
+                @endforeach
                 <div class="mt-3 flex items-center gap-3">
                     <flux:button type="button" wire:click="uploadExtraDocument" variant="primary" size="sm" wire:loading.attr="disabled" wire:target="uploadExtraDocument">
                         {{ __('common.upload') }}
                     </flux:button>
-                    <span wire:loading wire:target="extraDocFile" class="text-xs text-zinc-500">{{ __('customers.file_uploading') }}</span>
+                    <span wire:loading wire:target="extraDocFiles" class="text-xs text-zinc-500">{{ __('customers.file_uploading') }}</span>
                 </div>
                 <div class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <p class="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ __('customers.extra_docs_list') }}</p>
