@@ -6,7 +6,7 @@ return [
     'remember' => 'Remember me',
     'login' => 'Sign in',
     'logout' => 'Log out',
-    'login_subtitle' => 'Truck financing operations platform',
+    'login_subtitle' => 'Finance operations platform',
     'failed' => 'These credentials do not match our records.',
     'inactive' => 'Your account has been deactivated.',
 ];

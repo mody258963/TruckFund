@@ -20,9 +20,16 @@
                 @endif
             </div>
         </div>
-        <flux:button href="{{ route('customers.onboarding', $customer) }}" variant="primary">
-            {{ $customer->profile_completed ? __('customers.edit_profile') : __('customers.onboarding') }}
-        </flux:button>
+        <div class="flex flex-wrap gap-2">
+            @can('create', \App\Models\FinanceApplication::class)
+                <flux:button wire:click="createFinanceApplication" variant="primary" icon="banknotes">
+                    {{ __('finance.create_for_customer') }}
+                </flux:button>
+            @endcan
+            <flux:button href="{{ route('customers.onboarding', $customer) }}" variant="{{ $customer->profile_completed ? 'ghost' : 'primary' }}">
+                {{ $customer->profile_completed ? __('customers.edit_profile') : __('customers.onboarding') }}
+            </flux:button>
+        </div>
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">

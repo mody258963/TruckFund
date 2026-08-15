@@ -71,7 +71,7 @@ class StorageCleanupService
             ->where(fn ($q) => $q->whereNotNull('id_front_url')->orWhereNotNull('id_back_url'))
             ->get()
             ->each(function (Identification $id) use ($items, $disk, $cutoff) {
-                foreach (['id_front_url' => 'ID front', 'id_back_url' => 'ID back'] as $field => $label) {
+                foreach (['id_front_url' => __('customers.id_front'), 'id_back_url' => __('customers.id_back')] as $field => $label) {
                     $path = $id->{$field};
                     if (! $path || ! $disk->exists($path)) {
                         continue;
@@ -230,9 +230,9 @@ class StorageCleanupService
     public function formatBytes(int $bytes): string
     {
         if ($bytes >= 1048576) {
-            return round($bytes / 1048576, 2).' MB';
+            return round($bytes / 1048576, 2).' '.__('common.mb');
         }
 
-        return round($bytes / 1024, 1).' KB';
+        return round($bytes / 1024, 1).' '.__('common.kb');
     }
 }

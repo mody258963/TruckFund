@@ -17,4 +17,9 @@ return [
     'all' => 'All',
     'no_records' => 'No records found.',
     'created_at' => 'Created at',
+    'kb' => 'KB',
+    'mb' => 'MB',
+    'empty' => '—',
+    'locale_en' => 'English',
+    'locale_ar' => 'Arabic',
 ];

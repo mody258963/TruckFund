@@ -8,6 +8,7 @@ return [
     'retention' => 'مدة الاحتفاظ',
     'months' => 'أشهر',
     'storage_disk' => 'الملفات داخل التطبيق',
+    'storage_path' => 'storage/app/documents',
     'cleanup_title' => 'توفير مساحة القرص',
     'cleanup_desc' => 'يمكن حذف الملفات الأقدم من :months أشهر (قبل :date). امسح القائمة أولاً، راجعها، ثم احذف المحدد.',
     'scan' => 'فحص الملفات القديمة',

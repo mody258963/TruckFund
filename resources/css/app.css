@@ -19,3 +19,16 @@
 [dir='rtl'] body {
     font-family: var(--font-arabic);
 }
+
+[dir='rtl'] aside {
+    border-inline-end: 0;
+    border-inline-start: 1px solid rgb(39 39 42);
+}
+
+[dir='rtl'] .text-start {
+    text-align: right;
+}
+
+[dir='rtl'] .text-end {
+    text-align: left;
+}

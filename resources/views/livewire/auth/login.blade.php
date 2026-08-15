@@ -18,7 +18,7 @@
         <flux:button type="submit" variant="primary" class="w-full">{{ __('auth.login') }}</flux:button>
     </form>
     <div class="mt-4 flex justify-center gap-2">
-        <flux:button wire:click="setLocale('en')" size="sm" variant="ghost">EN</flux:button>
-        <flux:button wire:click="setLocale('ar')" size="sm" variant="ghost">عربي</flux:button>
+        <flux:button wire:click="setLocale('en')" size="sm" variant="ghost">{{ __('common.locale_en') }}</flux:button>
+        <flux:button wire:click="setLocale('ar')" size="sm" variant="ghost">{{ __('common.locale_ar') }}</flux:button>
     </div>
 </div>

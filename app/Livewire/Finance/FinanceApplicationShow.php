@@ -9,6 +9,7 @@ use App\Models\AutoProduct;
 use App\Models\FinanceApplication;
 use App\Models\FinancialProduct;
 use App\Models\Merchant;
+use App\Services\FinanceApplicationPdfService;
 use App\Services\FinanceApplicationService;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -99,6 +100,7 @@ class FinanceApplicationShow extends Component
         ]);
         $this->application = $service->update($this->application, $this->form);
         $this->application = $service->submitForReview($this->application);
+        session()->flash('finance_pdf_ready', true);
     }
 
     public function decide(string $decision, FinanceApplicationService $service): void
@@ -132,12 +134,13 @@ class FinanceApplicationShow extends Component
         $this->application = $service->complete($this->application);
     }
 
-    public function render()
+    public function render(FinanceApplicationPdfService $pdfService)
     {
         return view('livewire.finance.finance-application-show', [
             'merchants' => Merchant::query()->where('is_active', true)->get(),
             'autoProducts' => AutoProduct::query()->where('is_active', true)->get(),
             'financialProducts' => FinancialProduct::query()->where('is_active', true)->get(),
+            'canDownloadPdf' => $pdfService->canGenerate($this->application),
         ]);
     }
 }

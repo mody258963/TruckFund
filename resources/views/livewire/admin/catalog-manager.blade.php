@@ -19,7 +19,13 @@
                 @forelse($items as $item)
                 <tr>
                     @foreach($fields as $field)
-                    <td class="px-4 py-3 text-sm">{{ $item->{$field} }}</td>
+                    <td class="px-4 py-3 text-sm">
+                        @if($routeName === 'auto-products' && $field === 'type')
+                            {{ $item->type->label() }}
+                        @else
+                            {{ $item->{$field} }}
+                        @endif
+                    </td>
                     @endforeach
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-zinc-500">{{ $item->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                     <td class="px-4 py-3 text-end">
@@ -46,7 +52,16 @@
                     <label class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         {{ __("catalog.{$field}") }}
                     </label>
-                    @if($isTextarea)
+                    @if($routeName === 'auto-products' && $field === 'type')
+                        <select
+                            wire:model="form.type"
+                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                        >
+                            @foreach($autoProductTypes as $type)
+                                <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                            @endforeach
+                        </select>
+                    @elseif($isTextarea)
                         <textarea
                             wire:model="form.{{ $field }}"
                             rows="3"

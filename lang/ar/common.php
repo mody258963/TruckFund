@@ -17,4 +17,9 @@ return [
     'all' => 'الكل',
     'no_records' => 'لا توجد سجلات.',
     'created_at' => 'تاريخ الإنشاء',
+    'kb' => 'ك.ب',
+    'mb' => 'م.ب',
+    'empty' => '—',
+    'locale_en' => 'English',
+    'locale_ar' => 'عربي',
 ];

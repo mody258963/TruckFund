@@ -21,6 +21,15 @@
         <flux:badge color="{{ $status->color() }}" size="lg">{{ $status->label() }}</flux:badge>
     </div>
 
+    @if(session('finance_pdf_ready') && ($canDownloadPdf ?? false))
+        <div class="mb-6 rounded-xl border border-teal-200 bg-teal-50 p-4 dark:border-teal-900 dark:bg-teal-950/30">
+            <p class="text-sm text-teal-800 dark:text-teal-200">{{ __('finance.pdf_ready_after_submit') }}</p>
+            <flux:button href="{{ route('finance.pdf', $application) }}" variant="primary" size="sm" class="mt-3" icon="arrow-down-tray">
+                {{ __('finance.download_pdf') }}
+            </flux:button>
+        </div>
+    @endif
+
     {{-- Pipeline overview --}}
     <div class="mb-6 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <p class="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('finance.workflow_title') }}</p>
@@ -105,7 +114,9 @@
                         <flux:select wire:model="form.auto_product_id" label="{{ __('finance.truck') }}" class="md:col-span-2">
                             <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
                             @foreach($autoProducts as $t)
-                                <flux:select.option value="{{ $t->id }}">{{ $t->brand }} — {{ $t->name }}</flux:select.option>
+                                <flux:select.option value="{{ $t->id }}">
+                                    {{ $t->brand }} — {{ $t->name }} ({{ $t->model_year ?? '—' }}) · {{ $t->type->label() }}
+                                </flux:select.option>
                             @endforeach
                         </flux:select>
                     @elseif($wizardStep === 2)
@@ -198,7 +209,17 @@
                 <flux:heading size="lg" class="mb-4">{{ __('finance.summary') }}</flux:heading>
                 <dl class="space-y-2 text-sm">
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.merchant') }}</dt><dd class="text-end">{{ $application->merchant?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.truck') }}</dt><dd class="text-end">{{ $application->autoProduct ? $application->autoProduct->brand.' — '.$application->autoProduct->name : '—' }}</dd></div>
+                    <div class="flex justify-between gap-2">
+                        <dt class="text-zinc-500">{{ __('finance.truck') }}</dt>
+                        <dd class="text-end">
+                            @if($application->autoProduct)
+                                {{ $application->autoProduct->brand }} — {{ $application->autoProduct->name }}
+                                ({{ $application->autoProduct->model_year ?? '—' }}) · {{ $application->autoProduct->type->label() }}
+                            @else
+                                —
+                            @endif
+                        </dd>
+                    </div>
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.product') }}</dt><dd class="text-end">{{ $application->financialProduct?->name ?? '—' }}</dd></div>
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.truck_price') }}</dt><dd>{{ $application->total_truck_price ? number_format((float) $application->total_truck_price, 2) : '—' }}</dd></div>
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.down_payment') }}</dt><dd>{{ $application->down_payment ? number_format((float) $application->down_payment, 2) : '—' }}</dd></div>
@@ -220,6 +241,16 @@
                     <p class="text-sm text-zinc-500">{{ __('finance.no_documents') }}</p>
                 @endforelse
             </div>
+
+            @if($canDownloadPdf ?? false)
+            <div class="rounded-xl border border-teal-200 bg-teal-50 p-6 dark:border-teal-900 dark:bg-teal-950/30">
+                <flux:heading size="lg" class="mb-2">{{ __('finance.download_pdf') }}</flux:heading>
+                <p class="mb-4 text-sm text-zinc-600 dark:text-zinc-400">{{ __('finance.pdf_hint') }}</p>
+                <flux:button href="{{ route('finance.pdf', $application) }}" variant="primary" icon="arrow-down-tray">
+                    {{ __('finance.download_pdf') }}
+                </flux:button>
+            </div>
+            @endif
         </div>
     </div>
 </div>

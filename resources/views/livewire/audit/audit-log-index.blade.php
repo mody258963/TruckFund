@@ -11,8 +11,12 @@
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                 @foreach($logs as $log)
+                @php
+                    $entityKey = 'audit.entities.'.class_basename($log->entity_type);
+                    $entityLabel = __($entityKey) !== $entityKey ? __($entityKey) : class_basename($log->entity_type);
+                @endphp
                 <tr>
-                    <td class="px-4 py-3">{{ $log->entity_type }} #{{ Str::limit($log->entity_id, 8) }}</td>
+                    <td class="px-4 py-3">{{ $entityLabel }} #{{ Str::limit($log->entity_id, 8) }}</td>
                     <td class="px-4 py-3">{{ $log->changedByUser?->full_name ?? '—' }}</td>
                     <td class="px-4 py-3">{{ $log->changed_at?->format('Y-m-d H:i') }}</td>
                 </tr>

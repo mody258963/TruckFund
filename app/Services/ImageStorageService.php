@@ -58,6 +58,41 @@ class ImageStorageService
         return (bool) preg_match('/\.(jpe?g|png|webp|gif)$/i', $path);
     }
 
+    public function exists(string $path): bool
+    {
+        return Storage::disk(self::DISK)->exists($path);
+    }
+
+    public function absolutePath(string $path): ?string
+    {
+        if (! $this->exists($path)) {
+            return null;
+        }
+
+        return Storage::disk(self::DISK)->path($path);
+    }
+
+    public function dataUri(string $path): ?string
+    {
+        if (! $this->isImagePath($path)) {
+            return null;
+        }
+
+        $absolute = $this->absolutePath($path);
+        if ($absolute === null) {
+            return null;
+        }
+
+        $mime = match (true) {
+            (bool) preg_match('/\.png$/i', $path) => 'image/png',
+            (bool) preg_match('/\.webp$/i', $path) => 'image/webp',
+            (bool) preg_match('/\.gif$/i', $path) => 'image/gif',
+            default => 'image/jpeg',
+        };
+
+        return 'data:'.$mime.';base64,'.base64_encode((string) file_get_contents($absolute));
+    }
+
     public function encodePath(string $path): string
     {
         return strtr(base64_encode($path), '+/', '-_');

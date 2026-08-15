@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FinanceApplicationPdfController;
 use App\Http\Controllers\StoredFileController;
 use App\Livewire\Admin\CatalogManager;
 use App\Livewire\Admin\Settings;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/finance', FinanceApplicationsIndex::class)->name('finance.index');
     Route::get('/finance/{application}', FinanceApplicationShow::class)->name('finance.show');
+    Route::get('/finance/{application}/pdf', FinanceApplicationPdfController::class)->name('finance.pdf');
 
     Route::get('/admin/{type}', CatalogManager::class)
         ->where('type', 'merchants|financial-products|auto-products|suppliers')

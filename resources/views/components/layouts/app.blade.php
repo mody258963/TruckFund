@@ -23,9 +23,6 @@
             <nav class="space-y-1 p-4 text-sm">
                 <a href="{{ route('dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('dashboard') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.dashboard') }}</a>
                 <a href="{{ route('leads.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('leads.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.leads') }}</a>
-                @can('viewAny', App\Models\User::class)
-                <a href="{{ route('users.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('users.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.users') }}</a>
-                @endcan
                 @can('viewAny', App\Models\Freelancer::class)
                 <a href="{{ route('freelancers.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('freelancers.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.freelancers') }}</a>
                 @endcan
@@ -36,6 +33,9 @@
                 <a href="{{ route('admin.catalog', 'financial-products') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request('type') === 'financial-products' ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.financial_products') }}</a>
                 <a href="{{ route('admin.catalog', 'auto-products') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request('type') === 'auto-products' ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.auto_products') }}</a>
                 <a href="{{ route('admin.catalog', 'suppliers') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request('type') === 'suppliers' ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.suppliers') }}</a>
+                @can('viewAny', App\Models\User::class)
+                <a href="{{ route('users.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('users.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.users') }}</a>
+                @endcan
                 @if(auth()->user()?->isAdmin())
                 <a href="{{ route('admin.settings') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('admin.settings') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.settings') }}</a>
                 <a href="{{ route('audit.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('audit.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.audit') }}</a>

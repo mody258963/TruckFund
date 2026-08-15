@@ -40,13 +40,23 @@ npm run build
 php artisan serve
 ```
 
-## Demo logins
+## Seeded logins
+
+Seeding (`php artisan truckfund:seed-demo`) creates exactly these two accounts and the heavy truck catalog — nothing else.
 
 | Email | Password | Role |
 |-------|----------|------|
-| admin@testfund.test | password | Admin |
-| sales@testfund.test | password | Sales |
-| finance@testfund.test | password | Finance |
+| aiman@truckfund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
+| mohammed@truckfund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
+
+Override per environment before seeding:
+
+```text
+TRUCKFUND_SEED_AIMAN_EMAIL=
+TRUCKFUND_SEED_AIMAN_PASSWORD=
+TRUCKFUND_SEED_MOHAMMED_EMAIL=
+TRUCKFUND_SEED_MOHAMMED_PASSWORD=
+```
 
 ## Modules
 

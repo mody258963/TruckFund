@@ -5,7 +5,7 @@
     <div class="mb-8 grid gap-4 sm:grid-cols-3">
         <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <p class="text-xs uppercase text-zinc-500">{{ __('settings.image_limit') }}</p>
-            <p class="mt-1 text-lg font-semibold">{{ $maxImageKb }} KB</p>
+            <p class="mt-1 text-lg font-semibold">{{ $maxImageKb }} {{ __('common.kb') }}</p>
             <p class="mt-1 text-xs text-zinc-400">{{ __('settings.image_limit_hint') }}</p>
         </div>
         <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
@@ -14,7 +14,7 @@
         </div>
         <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <p class="text-xs uppercase text-zinc-500">{{ __('settings.storage_disk') }}</p>
-            <p class="mt-1 text-sm font-medium">storage/app/documents</p>
+            <p class="mt-1 text-sm font-medium">{{ __('settings.storage_path') }}</p>
         </div>
     </div>
 

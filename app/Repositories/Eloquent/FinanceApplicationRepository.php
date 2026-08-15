@@ -19,7 +19,11 @@ class FinanceApplicationRepository extends EloquentRepository implements Finance
     {
         return $this->query()
             ->with([
-                'customer',
+                'customer.lead',
+                'customer.identification',
+                'customer.references',
+                'customer.financialData',
+                'customer.documents',
                 'user',
                 'merchant',
                 'autoProduct',

@@ -8,6 +8,7 @@ return [
     'retention' => 'Cleanup retention',
     'months' => 'months',
     'storage_disk' => 'Files stored in app',
+    'storage_path' => 'storage/app/documents',
     'cleanup_title' => 'Free disk space',
     'cleanup_desc' => 'Files older than :months months (before :date) can be removed. Scan first, review the list, then delete selected items.',
     'scan' => 'Scan old files',

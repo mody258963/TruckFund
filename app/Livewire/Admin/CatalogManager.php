@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\AutoProductType;
 use App\Models\AutoProduct;
 use App\Models\FinancialProduct;
 use App\Models\Merchant;
@@ -47,13 +48,14 @@ class CatalogManager extends Component
         [$this->modelClass, $this->titleKey, $this->routeName, $this->fields] = match ($type) {
             'merchants' => [Merchant::class, 'nav.merchants', 'merchants', ['name', 'type', 'contact_email']],
             'financial-products' => [FinancialProduct::class, 'nav.financial_products', 'financial-products', ['name', 'product_code', 'percentage', 'description']],
-            'auto-products' => [AutoProduct::class, 'nav.auto_products', 'auto-products', ['name', 'type', 'brand', 'chassis', 'price']],
+            'auto-products' => [AutoProduct::class, 'nav.auto_products', 'auto-products', ['brand', 'name', 'type', 'model_year', 'chassis', 'price']],
             'suppliers' => [Supplier::class, 'nav.suppliers', 'suppliers', ['name', 'phone', 'address', 'governorate', 'truck_type', 'city']],
             default => throw new \InvalidArgumentException('Unknown catalog type'),
         };
 
         $this->numericFields = match ($this->routeName) {
-            'merchants', 'auto-products' => ['type'],
+            'merchants' => ['type'],
+            'auto-products' => ['type', 'model_year'],
             'suppliers' => ['truck_type'],
             default => [],
         };
@@ -102,7 +104,8 @@ class CatalogManager extends Component
         $this->editingId = $id;
         $this->resetForm();
         foreach ($this->fields as $field) {
-            $this->form[$field] = $model->{$field};
+            $value = $model->{$field};
+            $this->form[$field] = $value instanceof \BackedEnum ? $value->value : $value;
         }
         if ($this->hasIsActive) {
             $this->form['is_active'] = (bool) $model->is_active;
@@ -149,16 +152,29 @@ class CatalogManager extends Component
         $rules = [];
         foreach ($this->fields as $field) {
             $key = 'form.'.$field;
+            if ($this->routeName === 'auto-products' && $field === 'type') {
+                $rules[$key] = ['required', Rule::enum(AutoProductType::class)];
+
+                continue;
+            }
+            if ($this->routeName === 'auto-products' && $field === 'model_year') {
+                $rules[$key] = ['required', 'integer', 'min:1990', 'max:'.(now()->year + 1)];
+
+                continue;
+            }
             if (in_array($field, $this->numericFields, true)) {
                 $rules[$key] = ['required', 'integer', 'min:0'];
+
                 continue;
             }
             if (in_array($field, $this->decimalFields, true)) {
                 $rules[$key] = ['required', 'numeric', 'min:0'];
+
                 continue;
             }
             if ($field === 'description' || $field === 'contact_email') {
                 $rules[$key] = ['nullable', 'string', 'max:5000'];
+
                 continue;
             }
             if ($field === 'product_code') {
@@ -168,6 +184,7 @@ class CatalogManager extends Component
                     'max:50',
                     Rule::unique('financial_products', 'product_code')->ignore($this->editingId, 'product_id'),
                 ];
+
                 continue;
             }
             $rules[$key] = ['required', 'string', 'max:255'];
@@ -180,6 +197,7 @@ class CatalogManager extends Component
     {
         return view('livewire.admin.catalog-manager', [
             'items' => $catalog->paginate($this->modelClass, 15, ['search' => $this->search]),
+            'autoProductTypes' => AutoProductType::cases(),
         ]);
     }
 }

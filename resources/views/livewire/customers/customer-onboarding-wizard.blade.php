@@ -17,7 +17,7 @@
                 <p class="mt-1 text-xs text-zinc-500">{{ __('customers.id_number_hint') }}</p>
                 <flux:input wire:model="form.name_en" label="{{ __('customers.name_en') }}" class="mt-3" />
                 <flux:input wire:model="form.name_ar" label="{{ __('customers.name_ar') }}" class="mt-3" />
-                <p class="mt-3 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('truckfund.image_max_kb', 2048)]) }}</p>
+                <p class="mt-3 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('TestFund.image_max_kb', 2048)]) }}</p>
                 <x-wire-file-input wire:model="idFront" accept="image/*" :label="__('customers.id_front')" />
                 <x-wire-file-input wire:model="idBack" accept="image/*" :label="__('customers.id_back')" />
             @elseif($step === 3)
@@ -72,7 +72,7 @@
                 </div>
             @elseif($step === 6)
                 <p class="mb-4 text-sm text-zinc-500">{{ __('customers.extra_docs_hint') }}</p>
-                <p class="mb-2 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('truckfund.image_max_kb', 2048)]) }}</p>
+                <p class="mb-2 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('TestFund.image_max_kb', 2048)]) }}</p>
                 <flux:select wire:model="extraDocType" label="{{ __('customers.extra_doc_type') }}">
                     @foreach($extraDocTypes as $type)
                         <flux:select.option value="{{ $type->value }}">{{ $type->label() }}</flux:select.option>

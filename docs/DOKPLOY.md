@@ -81,9 +81,10 @@ Default logins after seeding:
 
 | Email | Password | Role |
 |-------|----------|------|
-| `admin@testfund.test` | `password` | Admin |
-| `sales@testfund.test` | `password` | Sales |
-| `finance@testfund.test` | `password` | Finance |
+| `aiman@truckfund.test` | `Ay#7mNq4Zt$Rv2Kx` | Admin |
+| `mohammed@truckfund.test` | `Mh$9dRk6Xw#Pb3Tq` | Admin |
+
+Set `TRUCKFUND_SEED_AIMAN_PASSWORD` and `TRUCKFUND_SEED_MOHAMMED_PASSWORD` in the Dokploy environment before seeding to use your own passwords.
 
 **Option A — seed only** (keeps existing data): add to Environment, redeploy once, then remove:
 
@@ -112,7 +113,7 @@ php artisan migrate:fresh --force && php artisan truckfund:seed-demo
 If you see `Call to undefined function fake()`, the running image is **old**. Either **redeploy** from latest Git, or create the admin user immediately:
 
 ```bash
-php artisan tinker --execute="use App\Models\User; use App\Enums\UserRole; use Illuminate\Support\Facades\Hash; User::updateOrCreate(['email'=>'admin@testfund.test'],['full_name'=>'Admin User','role'=>UserRole::Admin,'password'=>Hash::make('password'),'is_active'=>true]); echo 'ok';"
+php artisan truckfund:seed-demo
 ```
 
 ---
