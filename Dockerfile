@@ -9,17 +9,20 @@ WORKDIR /app
 
 COPY composer.json composer.lock ./
 
+# ext-gd is required by mpdf but absent from the composer image; it is installed
+# in the production stage, and nothing here executes the downloaded code.
 RUN composer install \
     --no-dev \
     --no-interaction \
     --no-scripts \
     --prefer-dist \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --ignore-platform-req=ext-gd
 
 COPY . .
 
 # Do not run artisan during build (no APP_KEY / .env yet — hangs on package:discover).
-RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts
+RUN composer dump-autoload --optimize --classmap-authoritative --no-scripts --ignore-platform-req=ext-gd
 
 # ------------------------------------------------------------------------------
 # Stage 2: Frontend assets (Vite + Flux)
