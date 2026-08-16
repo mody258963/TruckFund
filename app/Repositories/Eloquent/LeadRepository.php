@@ -41,7 +41,20 @@ class LeadRepository extends EloquentRepository implements LeadRepositoryInterfa
 
         $this->applyFilters($query, $filters);
 
-        return $query->latest()->paginate($perPage);
+        $today = today()->toDateString();
+
+        return $query
+            // Calls due today or overdue come first, nearest overdue date first.
+            ->orderByRaw(
+                'CASE WHEN follow_up_on IS NOT NULL AND DATE(follow_up_on) <= ? THEN 0
+                      WHEN follow_up_on IS NOT NULL THEN 1 ELSE 2 END',
+                [$today],
+            )
+            ->orderByRaw('CASE WHEN DATE(follow_up_on) <= ? THEN follow_up_on END DESC', [$today])
+            // Future calls follow in chronological order; unscheduled leads stay last.
+            ->orderByRaw('CASE WHEN DATE(follow_up_on) > ? THEN follow_up_on END ASC', [$today])
+            ->latest()
+            ->paginate($perPage);
     }
 
     protected function applyFilters(Builder $query, array $filters): Builder

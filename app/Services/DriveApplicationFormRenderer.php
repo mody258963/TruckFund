@@ -31,7 +31,7 @@ class DriveApplicationFormRenderer
         $this->addBackgroundPage($pdf, $this->mapper->applicantTemplate());
 
         // Custom CRM name on the left of the DRIVE logo; financial product on the right.
-        $this->headerText($pdf, 14.0, 7.2, (string) $data['logo_name'], 27);
+        $this->headerText($pdf, 14.0, 6.4, (string) $data['logo_name'], 27);
         $this->headerText($pdf, 60.0, 7.2, (string) ($data['financial_product_name'] ?? ''), 34);
         // The original Showroom / Dealer line remains independently editable.
         $this->headerText($pdf, 21.1, 12.6, (string) $data['showroom_agent'], 42, 11);

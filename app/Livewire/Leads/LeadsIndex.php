@@ -43,6 +43,8 @@ class LeadsIndex extends Component
 
     public ?string $freelancer_id = null;
 
+    public ?string $follow_up_on = null;
+
     /** @var array<int, string> */
     public array $selectedLeads = [];
 
@@ -55,6 +57,7 @@ class LeadsIndex extends Component
             'customer_name' => 'required|string|max:150',
             'phone' => 'nullable|string|max:20',
             'price' => 'nullable|numeric|min:0',
+            'follow_up_on' => 'nullable|date_format:Y-m-d',
         ]);
         $source = auth()->user()->isAdmin() ? LeadSource::AdminDashboard : LeadSource::SalesInput;
         $service->create([
@@ -64,10 +67,34 @@ class LeadsIndex extends Component
             'car_brand' => $this->car_brand ?: null,
             'price' => $this->price,
             'freelancer_id' => $this->freelancer_id,
+            'follow_up_on' => $this->follow_up_on,
             'assigned_user_id' => auth()->user()->isSales() ? auth()->id() : null,
         ], auth()->user(), $source);
-        $this->reset(['customer_name', 'phone', 'email', 'car_brand', 'price', 'freelancer_id', 'showCreate']);
+        $this->reset([
+            'customer_name',
+            'phone',
+            'email',
+            'car_brand',
+            'price',
+            'freelancer_id',
+            'follow_up_on',
+            'showCreate',
+        ]);
         $this->dispatch('notify', message: __('leads.created'));
+    }
+
+    public function saveFollowUp(string $leadId, ?string $date, LeadService $service): void
+    {
+        $lead = Lead::query()->findOrFail($leadId);
+        $this->authorize('update', $lead);
+
+        $validated = validator(
+            ['date' => $date ?: null],
+            ['date' => 'nullable|date_format:Y-m-d'],
+        )->validate();
+
+        $service->update($lead, ['follow_up_on' => $validated['date']]);
+        $this->dispatch('notify', message: __('leads.follow_up_saved'));
     }
 
     public function toggleSelectAllOnPage(array $pageLeadIds): void

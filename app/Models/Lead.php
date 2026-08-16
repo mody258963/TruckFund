@@ -31,6 +31,7 @@ class Lead extends BaseUuidModel
         'status',
         'source',
         'freelancer_id',
+        'follow_up_on',
     ];
 
     protected function casts(): array
@@ -41,6 +42,7 @@ class Lead extends BaseUuidModel
             'source' => LeadSource::class,
             'is_priority' => 'boolean',
             'price' => 'decimal:2',
+            'follow_up_on' => 'date',
         ];
     }
 

@@ -28,6 +28,12 @@ return [
     'ai_score' => 'AI score',
     'car_brand' => 'Truck brand',
     'price' => 'Price',
+    'follow_up' => 'Call on',
+    'follow_up_saved' => 'Call date saved.',
+    'call_today' => 'Call today',
+    'call_tomorrow' => 'Call tomorrow',
+    'call_in_days' => 'Call in :days days',
+    'overdue_days' => 'Overdue :days days',
     'delete' => 'Delete lead',
     'delete_confirm' => 'Permanently delete this lead? This action cannot be undone.',
 ];

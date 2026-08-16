@@ -77,12 +77,14 @@
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.assigned_to') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.value') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.status') }}</th>
+                    <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('leads.follow_up') }}</th>
                     <th class="px-4 py-3 text-start text-xs font-medium uppercase text-zinc-500">{{ __('common.created_at') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                 @forelse($leads as $lead)
-                <tr class="{{ $lead->is_priority ? 'bg-amber-50/50 dark:bg-amber-950/20' : '' }} hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                @php($followUpDue = $lead->follow_up_on?->lte(today()) ?? false)
+                <tr class="{{ $followUpDue ? 'bg-red-50/70 dark:bg-red-950/20' : ($lead->is_priority ? 'bg-amber-50/50 dark:bg-amber-950/20' : '') }} hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
                     @if($canBulkAssign)
                     <td class="px-4 py-3">
                         <input type="checkbox" wire:model="selectedLeads" value="{{ $lead->lead_id }}" class="rounded border-zinc-300" />
@@ -99,10 +101,37 @@
                         @endif
                     </td>
                     <td class="px-4 py-3"><flux:badge color="{{ $lead->status->color() }}">{{ $lead->status->label() }}</flux:badge></td>
+                    <td class="min-w-40 px-4 py-3">
+                        @can('update', $lead)
+                            <input
+                                type="date"
+                                value="{{ $lead->follow_up_on?->format('Y-m-d') }}"
+                                wire:change="saveFollowUp('{{ $lead->lead_id }}', $event.target.value)"
+                                class="block w-full rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                                aria-label="{{ __('leads.follow_up') }}"
+                            />
+                        @else
+                            <span class="text-sm text-zinc-600">{{ $lead->follow_up_on?->format('Y-m-d') ?? '—' }}</span>
+                        @endcan
+                        @if($lead->follow_up_on)
+                            @php($daysUntilCall = (int) today()->diffInDays($lead->follow_up_on, false))
+                            <div class="mt-1">
+                                @if($daysUntilCall < 0)
+                                    <flux:badge color="red" size="sm">{{ __('leads.overdue_days', ['days' => abs($daysUntilCall)]) }}</flux:badge>
+                                @elseif($daysUntilCall === 0)
+                                    <flux:badge color="red" size="sm">{{ __('leads.call_today') }}</flux:badge>
+                                @elseif($daysUntilCall === 1)
+                                    <flux:badge color="amber" size="sm">{{ __('leads.call_tomorrow') }}</flux:badge>
+                                @else
+                                    <flux:badge color="blue" size="sm">{{ __('leads.call_in_days', ['days' => $daysUntilCall]) }}</flux:badge>
+                                @endif
+                            </div>
+                        @endif
+                    </td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-zinc-500">{{ $lead->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="{{ $canBulkAssign ? 8 : 7 }}" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
+                <tr><td colspan="{{ $canBulkAssign ? 9 : 8 }}" class="px-4 py-8 text-center text-zinc-500">{{ __('common.no_records') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -117,6 +146,7 @@
             <flux:input wire:model="email" type="email" label="{{ __('auth.email') }}" />
             <flux:input wire:model="car_brand" label="{{ __('leads.car_brand') }}" />
             <x-money-input model="price" :value="$price" :label="__('leads.price')" />
+            <flux:input wire:model="follow_up_on" type="date" label="{{ __('leads.follow_up') }}" />
             @if($freelancers->isNotEmpty())
             <flux:select wire:model="freelancer_id" label="{{ __('crm.leads.reference') }}">
                 <flux:select.option value="">{{ __('common.none') }}</flux:select.option>
