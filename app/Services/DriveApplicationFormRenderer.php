@@ -13,7 +13,10 @@ use Mpdf\Mpdf;
 class DriveApplicationFormRenderer
 {
     /** Every overlaid value is enlarged by this factor over the calibrated size. */
-    protected const TEXT_SCALE = 1.7;
+    protected const TEXT_SCALE = 2.0;
+
+    /** Millimetres each value is re-stamped sideways to fake a heavier weight. */
+    protected const BOLD_SMEAR = 0.18;
 
     /** Long values shrink instead of wrapping once they exceed their field width. */
     protected const MIN_FONT_SIZE = 7.5;
@@ -23,6 +26,12 @@ class DriveApplicationFormRenderer
 
     /** Serif face with Arabic coverage; heavier on paper than DejaVu Sans. */
     protected const TEXT_FONT = 'freeserif';
+
+    /**
+     * Values and marks are nudged up by this share of the page height; the
+     * enlarged font otherwise sits low against the printed rule of each field.
+     */
+    protected const Y_OFFSET = -1.1;
 
     public function __construct(
         protected DriveApplicationFormData $mapper,
@@ -34,56 +43,25 @@ class DriveApplicationFormRenderer
         $this->addBackgroundPage($pdf, $this->mapper->applicantTemplate());
 
         // Custom CRM name on the left of the DRIVE logo; financial product on the right.
-        $this->headerText($pdf, 14.0, 6.4, (string) $data['logo_name'], 27);
-        $this->headerText($pdf, 60.0, 7.2, (string) ($data['financial_product_name'] ?? ''), 34);
+        $this->headerText($pdf, 14.0, 2.6, (string) $data['logo_name'], 27);
+        $this->headerText($pdf, 60.0, 2.6, (string) ($data['financial_product_name'] ?? ''), 34);
         // The original Showroom / Dealer line remains independently editable.
         $this->headerText($pdf, 21.1, 12.6, (string) $data['showroom_agent'], 42, 11);
         $this->text($pdf, 60.0, 12.9, (string) $data['date'], 22);
 
-        $this->markChoice($pdf, $data['title'], [
-            'Mr' => [21.2, 22.0],
-            'Dr' => [31.5, 22.1],
-            'Eng' => [41.9, 22.0],
-            'Mrs' => [52.0, 22.3],
-            'Ms' => [61.8, 22.2],
-            'Other' => [71.9, 22.3],
-        ]);
-
-        // Applicant name is the headline field on the form, so it prints largest.
-        $this->text($pdf, 21.1, 27.4, (string) $data['name_combined'], 58, 13);
+        // Applicant name is the headline field on the form, so it prints largest,
+        // centred across the full width of its line.
+        $this->text($pdf, 21.1, 26.5, (string) $data['name_combined'], 58, 13, 'C');
         $this->text($pdf, 37.0, 31.8, (string) $data['dob'], 22);
-        $this->markChoice($pdf, $data['gender'], [
-            'M' => [20.9, 31.3],
-            'F' => [28.4, 31.4],
-        ]);
-        $this->markChoice($pdf, $data['nationality'], [
-            'Egyptian' => [20.8, 35.4],
-            'Other' => [28.4, 35.5],
-        ]);
-        $this->markChoice($pdf, $data['id_type'], [
-            'Egyptian' => [20.8, 39.9],
-            'Other' => [28.4, 39.9],
-        ]);
-        $this->text($pdf, 37.0, 40.4, (string) $data['id_number'], 22);
+        // A 14-digit national ID needs more room than the other short fields.
+        $this->text($pdf, 37.0, 40.4, (string) $data['id_number'], 30);
 
         // Sit just under the "Home Address" label on the dotted line.
         $this->text($pdf, 21.1, 48.2, (string) $data['home_address'], 55, 9);
-        $this->markChoice($pdf, $data['home_ownership'], [
-            'Own' => [20.7, 51.8],
-            'New Rent' => [34.5, 51.9],
-            'Old Rent' => [49.9, 52.1],
-            'With Parents' => [65.5, 52.0],
-        ]);
         $this->text($pdf, 21.1, 57.3, (string) $data['home_duration'], 55);
         $this->text($pdf, 21.1, 59.9, (string) $data['phone_mobile'], 55);
         // Email intentionally skipped.
         $this->text($pdf, 21.1, 66.0, (string) $data['prev_address'], 55, 8.5);
-        $this->markChoice($pdf, $data['prev_ownership'], [
-            'Own' => [20.4, 68.5],
-            'New Rent' => [34.2, 68.7],
-            'Old Rent' => [49.8, 68.5],
-            'With Parents' => [65.4, 68.7],
-        ]);
         $this->text($pdf, 21.1, 74.0, (string) $data['prev_duration'], 55);
 
         $this->text($pdf, 21.1, 84.1, (string) $data['ref_name'], 55);
@@ -96,11 +74,6 @@ class DriveApplicationFormRenderer
     public function writeEmploymentPage(Mpdf $pdf, array $data): void
     {
         $this->addBackgroundPage($pdf, $this->mapper->employmentTemplate());
-
-        $this->markChoice($pdf, $data['employment'], [
-            'Salaried' => [27.6, 6.5],
-            'Self-Employed' => [37.3, 6.4],
-        ]);
 
         $this->text($pdf, 27.1, 10.4, (string) $data['job_title'], 42, 9);
         $this->text($pdf, 27.1, 13.5, (string) $data['job_duration'], 42);
@@ -120,13 +93,6 @@ class DriveApplicationFormRenderer
         $this->text($pdf, 27.1, 64.0, (string) $data['price'], 42);
         $this->text($pdf, 27.1, 66.2, (string) $data['down_payment'], 42);
         $this->text($pdf, 27.1, 68.3, (string) $data['tenor_years'], 42);
-
-        if (! empty($data['docs_residence'])) {
-            $this->mark($pdf, 21.3, 88.2);
-        }
-        if (! empty($data['docs_id'])) {
-            $this->mark($pdf, 52.3, 88.2);
-        }
 
         $this->text($pdf, 22.2, 91.5, (string) $data['comments'], 68, 8);
         $this->headerText($pdf, 66.0, 97.1, (string) $data['sales_officer'], 30, 11);
@@ -153,16 +119,17 @@ class DriveApplicationFormRenderer
         $columnWidth = $usable / $count;
         $fontSize = $count >= 3 ? 7.0 : ($count === 2 ? 7.5 : 8.5);
 
+        // Pairs, not keys: PHP truncates float array keys to integers.
         $rows = [
-            50.4 => 'brand',
-            53.0 => 'name',
-            55.6 => 'model',
-            58.2 => 'year',
+            [50.4, 'brand'],
+            [53.0, 'name'],
+            [55.6, 'model'],
+            [58.2, 'year'],
         ];
 
         foreach ($vehicles as $index => $vehicle) {
             $x = $startX + ($index * ($columnWidth + $gap));
-            foreach ($rows as $y => $key) {
+            foreach ($rows as [$y, $key]) {
                 $this->text($pdf, $x, $y, (string) ($vehicle[$key] ?? ''), $columnWidth, $fontSize);
             }
         }
@@ -207,6 +174,7 @@ class DriveApplicationFormRenderer
         string $value,
         float $maxWidthPercent,
         float $fontSize = 9,
+        string $align = 'L',
     ): void {
         $value = trim($value);
         if ($value === '') {
@@ -214,49 +182,33 @@ class DriveApplicationFormRenderer
         }
 
         $x = 210 * ($xPercent / 100);
-        $y = 297 * ($yPercent / 100);
+        $y = 297 * (($yPercent + self::Y_OFFSET) / 100);
         $width = 210 * ($maxWidthPercent / 100);
         $fontSize *= self::TEXT_SCALE;
 
+        // MultiCell adds its own padding plus the smear offset, so the text has to
+        // clear a slightly narrower box than the cell to stay on one line.
+        $usableWidth = $width - self::BOLD_SMEAR - 2.0;
+
         $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
         // Shrink rather than wrap: a wrapped line would spill onto the field below.
-        while ($fontSize > self::MIN_FONT_SIZE && $pdf->GetStringWidth($value) > $width) {
+        while ($fontSize > self::MIN_FONT_SIZE && $pdf->GetStringWidth($value) > $usableWidth) {
             $fontSize = max(self::MIN_FONT_SIZE, $fontSize - 0.25);
             $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
         }
 
         $pdf->SetTextColor(...self::TEXT_COLOR);
-        $pdf->SetXY($x, $y);
+
         // Line height must clear Arabic glyph descenders; too-tight cells clip
         // longer address lines so they look "missing" on the form.
-        $pdf->MultiCell($width, max(4.2, $fontSize * 0.55), $value, 0, 'L');
-    }
+        $lineHeight = max(4.2, $fontSize * 0.55);
 
-    /** @param array<string, array{0:float,1:float}> $choices */
-    protected function markChoice(Mpdf $pdf, mixed $selected, array $choices): void
-    {
-        if ($selected === null || $selected === '') {
-            return;
+        // The bold face alone still looks thin against the scan, so each value is
+        // stamped a second time a hair to the side to thicken every stroke.
+        foreach ([0.0, self::BOLD_SMEAR] as $offset) {
+            $pdf->SetXY($x + $offset, $y);
+            $pdf->MultiCell($width, $lineHeight, $value, 0, $align);
         }
-
-        $key = (string) $selected;
-        if (! isset($choices[$key])) {
-            return;
-        }
-
-        [$xPercent, $yPercent] = $choices[$key];
-        $this->mark($pdf, $xPercent, $yPercent);
     }
 
-    protected function mark(Mpdf $pdf, float $xPercent, float $yPercent): void
-    {
-        $x = 210 * ($xPercent / 100);
-        $y = 297 * ($yPercent / 100);
-        $size = 2.2;
-
-        $pdf->SetDrawColor(...self::TEXT_COLOR);
-        $pdf->SetLineWidth(0.55);
-        $pdf->Line($x - $size, $y - $size, $x + $size, $y + $size);
-        $pdf->Line($x - $size, $y + $size, $x + $size, $y - $size);
-    }
 }
