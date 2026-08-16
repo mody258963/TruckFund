@@ -75,6 +75,9 @@ class DriveApplicationFormRenderer
     {
         $this->addBackgroundPage($pdf, $this->mapper->employmentTemplate());
 
+        // Same financial product as page 1, fixed in the top-right corner.
+        $this->headerText($pdf, 60.0, 1.4, (string) ($data['financial_product_name'] ?? ''), 34);
+
         $this->text($pdf, 27.1, 10.4, (string) $data['job_title'], 42, 9);
         $this->text($pdf, 27.1, 13.5, (string) $data['job_duration'], 42);
         $this->text($pdf, 27.1, 16.7, (string) $data['company_name'], 42, 8.5);
