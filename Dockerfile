@@ -11,13 +11,36 @@ COPY composer.json composer.lock ./
 
 # ext-gd is required by mpdf but absent from the composer image; it is installed
 # in the production stage, and nothing here executes the downloaded code.
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --no-scripts \
-    --prefer-dist \
-    --optimize-autoloader \
-    --ignore-platform-req=ext-gd
+#
+# Anonymous GitHub downloads are rate limited (HTTP 429), so keep the parallel
+# download count low, retry with backoff, and reuse the cache between attempts.
+# Pass `--secret id=github_token,env=GITHUB_TOKEN` to the build to raise the limit.
+ENV COMPOSER_CACHE_DIR=/tmp/composer-cache \
+    COMPOSER_MAX_PARALLEL_HTTP=6
+
+RUN --mount=type=cache,target=/tmp/composer-cache \
+    --mount=type=secret,id=github_token \
+    set -eu; \
+    if [ -s /run/secrets/github_token ]; then \
+        composer config --global --auth github-oauth.github.com "$(cat /run/secrets/github_token)"; \
+    fi; \
+    attempt=1; \
+    until composer install \
+            --no-dev \
+            --no-interaction \
+            --no-scripts \
+            --prefer-dist \
+            --optimize-autoloader \
+            --ignore-platform-req=ext-gd; do \
+        if [ "$attempt" -ge 5 ]; then \
+            echo "composer install failed after $attempt attempts" >&2; \
+            exit 1; \
+        fi; \
+        delay=$((attempt * 20)); \
+        echo "composer install attempt $attempt failed; retrying in ${delay}s" >&2; \
+        sleep "$delay"; \
+        attempt=$((attempt + 1)); \
+    done
 
 COPY . .
 
