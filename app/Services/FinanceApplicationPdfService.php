@@ -16,6 +16,8 @@ class FinanceApplicationPdfService
     public function __construct(
         protected FinanceApplicationRepositoryInterface $applications,
         protected ImageStorageService $images,
+        protected DriveApplicationFormData $formData,
+        protected DriveApplicationFormRenderer $formRenderer,
     ) {}
 
     public function canGenerate(FinanceApplication $application): bool
@@ -74,6 +76,8 @@ class FinanceApplicationPdfService
         try {
             app()->setLocale('ar');
 
+            $this->formData->ensureTemplatesExist();
+            $formValues = $this->formData->fromApplication($application);
             $attachments = $this->collectAttachments($application);
             $tempDirectory = storage_path('app/mpdf-temp');
             File::ensureDirectoryExists($tempDirectory);
@@ -86,23 +90,21 @@ class FinanceApplicationPdfService
                 'directionality' => 'rtl',
                 'autoScriptToLang' => true,
                 'autoLangToFont' => true,
+                'margin_left' => 0,
+                'margin_right' => 0,
+                'margin_top' => 0,
+                'margin_bottom' => 0,
             ]);
 
             $pdf->SetTitle($application->app_number);
 
-            // Each chunk is written separately so no single string approaches
-            // pcre.backtrack_limit, which mPDF's HTML parser is bound by.
+            // Page 1 = applicant form, page 2 = employment/vehicle form, then images.
+            $this->formRenderer->writeApplicantPage($pdf, $formValues);
+            $this->formRenderer->writeEmploymentPage($pdf, $formValues);
+
             $pdf->WriteHTML(
                 view('pdf.finance-application-styles')->render(),
                 HTMLParserMode::HEADER_CSS,
-            );
-            $pdf->WriteHTML(
-                view('pdf.finance-application', [
-                    'application' => $application,
-                    'customer' => $application->customer,
-                    'generatedAt' => now(),
-                ])->render(),
-                HTMLParserMode::HTML_BODY,
             );
 
             $this->appendImageAttachments($pdf, $attachments->where('type', 'image'));
@@ -143,7 +145,13 @@ class FinanceApplicationPdfService
     protected function appendImageAttachments(Mpdf $pdf, Collection $attachments): void
     {
         foreach ($attachments as $attachment) {
-            $pdf->AddPage();
+            $pdf->AddPageByArray([
+                'orientation' => 'P',
+                'mgl' => 12,
+                'mgr' => 12,
+                'mgt' => 12,
+                'mgb' => 12,
+            ]);
             $pdf->WriteHTML(
                 view('pdf.finance-application-attachment', ['attachment' => $attachment])->render(),
                 HTMLParserMode::HTML_BODY,
@@ -159,7 +167,13 @@ class FinanceApplicationPdfService
 
             for ($pageNumber = 1; $pageNumber <= $pageCount; $pageNumber++) {
                 $template = $pdf->importPage($pageNumber);
-                $pdf->AddPage();
+                $pdf->AddPageByArray([
+                    'orientation' => 'P',
+                    'mgl' => 0,
+                    'mgr' => 0,
+                    'mgt' => 0,
+                    'mgb' => 0,
+                ]);
                 $pdf->useTemplate($template, ['adjustPageSize' => true]);
             }
         }

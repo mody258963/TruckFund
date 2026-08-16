@@ -18,15 +18,27 @@
                 </p>
             @endif
         </div>
-        <flux:badge color="{{ $status->color() }}" size="lg">{{ $status->label() }}</flux:badge>
+        <div class="flex flex-wrap items-center gap-3">
+            @if($canDownloadPdf ?? false)
+                <flux:button href="{{ route('finance.pdf', $application) }}" variant="primary" icon="arrow-down-tray">
+                    {{ __('finance.download_pdf') }}
+                </flux:button>
+            @endif
+            <flux:badge color="{{ $status->color() }}" size="lg">{{ $status->label() }}</flux:badge>
+        </div>
     </div>
 
-    @if(session('finance_pdf_ready') && ($canDownloadPdf ?? false))
+    @if($canDownloadPdf ?? false)
         <div class="mb-6 rounded-xl border border-teal-200 bg-teal-50 p-4 dark:border-teal-900 dark:bg-teal-950/30">
-            <p class="text-sm text-teal-800 dark:text-teal-200">{{ __('finance.pdf_ready_after_submit') }}</p>
-            <flux:button href="{{ route('finance.pdf', $application) }}" variant="primary" size="sm" class="mt-3" icon="arrow-down-tray">
-                {{ __('finance.download_pdf') }}
-            </flux:button>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="font-medium text-teal-900 dark:text-teal-100">{{ __('finance.download_pdf') }}</p>
+                    <p class="mt-1 text-sm text-teal-800 dark:text-teal-200">{{ __('finance.pdf_hint') }}</p>
+                </div>
+                <flux:button href="{{ route('finance.pdf', $application) }}" variant="primary" size="sm" icon="arrow-down-tray">
+                    {{ __('finance.download_pdf') }}
+                </flux:button>
+            </div>
         </div>
     @endif
 

@@ -160,6 +160,56 @@ class FinanceApplicationTest extends TestCase
         $this->assertCount(0, $app->fresh()->applicationDocuments);
     }
 
+    public function test_pdf_download_button_remains_available_after_reload(): void
+    {
+        $user = User::factory()->financeOfficer()->create();
+        $merchant = Merchant::query()->create([
+            'name' => 'Test Bank',
+            'type' => 1,
+            'is_active' => true,
+        ]);
+        $autoProduct = AutoProduct::query()->create([
+            'brand' => 'Volvo',
+            'name' => 'FH16',
+            'type' => 1,
+            'chassis' => 'CH-PDF-BTN-001',
+            'price' => 600000,
+            'is_active' => true,
+        ]);
+        $financialProduct = FinancialProduct::query()->create([
+            'name' => 'Truck Loan 60m',
+            'product_code' => 'PDF-BTN-01',
+            'percentage' => 18.5,
+            'is_active' => true,
+        ]);
+        $customer = Customer::query()->create([
+            'display_name' => 'PDF Button Customer',
+            'mobile_number' => '01001112234',
+        ]);
+
+        $app = app(FinanceApplicationService::class)->createDraft([
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'financial_merchant_id' => $merchant->merchant_id,
+            'auto_product_id' => $autoProduct->id,
+            'financial_product_id' => $financialProduct->product_id,
+            'down_payment' => 100000,
+            'total_loan_amount' => 500000,
+            'total_truck_price' => 600000,
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(FinanceApplicationShow::class, ['application' => $app])
+            ->assertSee(__('finance.download_pdf'), false)
+            ->assertSee(route('finance.pdf', $app), false);
+
+        // Simulate leaving and opening the application again.
+        Livewire::test(FinanceApplicationShow::class, ['application' => $app->fresh()])
+            ->assertSee(__('finance.download_pdf'), false)
+            ->assertSee(route('finance.pdf', $app), false);
+    }
+
     public function test_application_number_is_not_reused_after_a_deletion(): void
     {
         $user = User::factory()->financeOfficer()->create();

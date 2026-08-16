@@ -118,7 +118,6 @@ class FinanceApplicationShow extends Component
         $this->validate($this->completeDraftRules());
         $this->application = $service->update($this->application, $this->form);
         $this->application = $service->submitForReview($this->application);
-        session()->flash('finance_pdf_ready', true);
     }
 
     public function decide(string $decision, FinanceApplicationService $service): void

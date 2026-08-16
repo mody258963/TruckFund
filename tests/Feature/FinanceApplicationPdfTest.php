@@ -124,7 +124,7 @@ class FinanceApplicationPdfTest extends TestCase
             StreamReader::createByString($response->getContent()),
         );
 
-        $this->assertGreaterThanOrEqual(4, $pageCount);
+        $this->assertGreaterThanOrEqual(5, $pageCount);
     }
 
     /**
