@@ -12,6 +12,15 @@ use Mpdf\Mpdf;
  */
 class DriveApplicationFormRenderer
 {
+    /** Every overlaid value is enlarged by this factor over the calibrated size. */
+    protected const TEXT_SCALE = 1.25;
+
+    /** Overlay values print in solid black so they stay legible over the grey scan. */
+    protected const TEXT_COLOR = [0, 0, 0];
+
+    /** Serif face with Arabic coverage; heavier on paper than DejaVu Sans. */
+    protected const TEXT_FONT = 'freeserif';
+
     public function __construct(
         protected DriveApplicationFormData $mapper,
     ) {}
@@ -22,10 +31,10 @@ class DriveApplicationFormRenderer
         $this->addBackgroundPage($pdf, $this->mapper->applicantTemplate());
 
         // Custom CRM name on the left of the DRIVE logo; financial product on the right.
-        $this->text($pdf, 16.0, 7.8, (string) $data['logo_name'], 25, 13, true);
-        $this->text($pdf, 62.0, 7.8, (string) ($data['financial_product_name'] ?? ''), 30, 13, true);
+        $this->headerText($pdf, 14.0, 7.2, (string) $data['logo_name'], 27);
+        $this->headerText($pdf, 60.0, 7.2, (string) ($data['financial_product_name'] ?? ''), 34);
         // The original Showroom / Dealer line remains independently editable.
-        $this->text($pdf, 21.1, 12.9, (string) $data['showroom_agent'], 42, 11, true);
+        $this->headerText($pdf, 21.1, 12.6, (string) $data['showroom_agent'], 42, 11);
         $this->text($pdf, 60.0, 12.9, (string) $data['date'], 22);
 
         $this->markChoice($pdf, $data['title'], [
@@ -116,7 +125,7 @@ class DriveApplicationFormRenderer
         }
 
         $this->text($pdf, 22.2, 91.5, (string) $data['comments'], 68, 8);
-        $this->text($pdf, 66.0, 97.4, (string) $data['sales_officer'], 29, 11, true);
+        $this->headerText($pdf, 66.0, 97.1, (string) $data['sales_officer'], 30, 11);
     }
 
     /**
@@ -171,6 +180,18 @@ class DriveApplicationFormRenderer
         $pdf->Image($imagePath, 0, 0, 210, 297, '', '', true, false);
     }
 
+    /** The CRM-managed names around the DRIVE logo are the largest text on the form. */
+    protected function headerText(
+        Mpdf $pdf,
+        float $xPercent,
+        float $yPercent,
+        string $value,
+        float $maxWidthPercent,
+        float $fontSize = 13,
+    ): void {
+        $this->text($pdf, $xPercent, $yPercent, $value, $maxWidthPercent, $fontSize);
+    }
+
     protected function text(
         Mpdf $pdf,
         float $xPercent,
@@ -178,7 +199,6 @@ class DriveApplicationFormRenderer
         string $value,
         float $maxWidthPercent,
         float $fontSize = 9,
-        bool $bold = false,
     ): void {
         $value = trim($value);
         if ($value === '') {
@@ -188,9 +208,10 @@ class DriveApplicationFormRenderer
         $x = 210 * ($xPercent / 100);
         $y = 297 * ($yPercent / 100);
         $width = 210 * ($maxWidthPercent / 100);
+        $fontSize *= self::TEXT_SCALE;
 
-        $pdf->SetFont('dejavusans', $bold ? 'B' : '', $fontSize);
-        $pdf->SetTextColor(15, 25, 80);
+        $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
+        $pdf->SetTextColor(...self::TEXT_COLOR);
         $pdf->SetXY($x, $y);
         // Line height must clear Arabic glyph descenders; too-tight cells clip
         // longer address lines so they look "missing" on the form.
@@ -219,8 +240,8 @@ class DriveApplicationFormRenderer
         $y = 297 * ($yPercent / 100);
         $size = 2.2;
 
-        $pdf->SetDrawColor(15, 25, 80);
-        $pdf->SetLineWidth(0.45);
+        $pdf->SetDrawColor(...self::TEXT_COLOR);
+        $pdf->SetLineWidth(0.55);
         $pdf->Line($x - $size, $y - $size, $x + $size, $y + $size);
         $pdf->Line($x - $size, $y + $size, $x + $size, $y - $size);
     }
