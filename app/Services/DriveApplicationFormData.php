@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\File;
 
 class DriveApplicationFormData
 {
+    public function __construct(
+        protected DrivePdfSettings $pdfSettings,
+    ) {}
+
     /**
      * Map a finance application / CRM customer onto the DRIVE paper form fields.
      *
@@ -18,8 +22,8 @@ class DriveApplicationFormData
         $customer = $application->customer;
         $ident = $customer?->identification;
         $fin = $customer?->financialData;
-        $product = $application->autoProduct;
         $reference = $customer?->references?->first();
+        $pdfSettings = $this->pdfSettings->values();
 
         $nameEn = trim((string) ($ident?->name_en ?: $customer?->display_name));
         $nameAr = trim((string) ($ident?->name_ar ?: ''));
@@ -55,10 +59,34 @@ class DriveApplicationFormData
             }
         }
 
+        $vehicles = $application->selectedVehicles()
+            ->take(3)
+            ->map(fn ($product) => [
+                'brand' => (string) ($product->brand ?? ''),
+                'name' => (string) ($product->name ?? ''),
+                'model' => (string) ($product->model ?: $product->name ?: ''),
+                'year' => $product->model_year ? (string) $product->model_year : '',
+                'type' => $product->type?->label() ?? '',
+            ])
+            ->values()
+            ->all();
+
+        $primary = $vehicles[0] ?? [
+            'brand' => '',
+            'name' => '',
+            'model' => '',
+            'year' => '',
+            'type' => '',
+        ];
+
         $isSelfEmployed = filled($fin?->org_name);
 
         return [
-            'showroom' => (string) config('truckfund.drive_form_showroom', 'sara gamal'),
+            'logo_name' => $pdfSettings['logo_name'],
+            'financial_product_name' => (string) ($application->financialProduct?->name ?? ''),
+            'showroom_agent' => $pdfSettings['showroom_agent'],
+            // Legacy key retained for callers that still expect it.
+            'showroom' => $pdfSettings['showroom_agent'],
             'date' => now()->format('d/m/Y'),
             'title' => 'Mr',
             'name_en' => $nameEn,
@@ -93,13 +121,16 @@ class DriveApplicationFormData
             'income_fixed' => $this->money($monthlyIncome),
             'income_variable' => '',
             'income_total' => $this->money($monthlyIncome),
-            'brand' => (string) ($product?->brand ?? ''),
-            'model' => (string) ($product?->name ?? ''),
-            'year' => $product?->model_year ? (string) $product->model_year : '',
+            'vehicles' => $vehicles,
+            // Legacy single-vehicle keys remain for compatibility / first vehicle.
+            'brand' => $primary['brand'],
+            'name' => $primary['name'],
+            'model' => $primary['model'],
+            'year' => $primary['year'],
             'color' => '',
             'engine_cc' => '',
             'options' => '',
-            'price' => $this->money($application->total_truck_price ?? $product?->price),
+            'price' => $this->money($application->total_truck_price ?? $application->autoProduct?->price),
             'down_payment' => $this->money($application->down_payment),
             'tenor_years' => '',
             'docs_id' => (bool) ($ident?->id_front_url || $ident?->id_back_url),
@@ -107,7 +138,9 @@ class DriveApplicationFormData
             'comments' => $application->customer?->lead?->lead_number
                 ? 'Lead '.$application->customer->lead->lead_number
                 : '',
-            'sales_officer' => (string) ($application->user?->full_name ?? ''),
+            'sales_officer' => $pdfSettings['sales_officer'] !== ''
+                ? $pdfSettings['sales_officer']
+                : (string) ($application->user?->full_name ?? ''),
         ];
     }
 

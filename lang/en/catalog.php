@@ -8,6 +8,7 @@ return [
     'percentage' => 'Rate %',
     'description' => 'Description',
     'brand' => 'Brand',
+    'model' => 'Model',
     'model_year' => 'Model year',
     'chassis' => 'Chassis / catalog code',
     'price' => 'Price',

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class FinanceApplication extends BaseUuidModel
 {
@@ -61,6 +63,42 @@ class FinanceApplication extends BaseUuidModel
         return $this->belongsTo(AutoProduct::class, 'auto_product_id', 'id');
     }
 
+    public function autoProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            AutoProduct::class,
+            'finance_application_auto_product',
+            'app_id',
+            'auto_product_id',
+            'app_id',
+            'id',
+        )->withPivot('sort_order')
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
+    }
+
+    /**
+     * Preferred vehicle list for UI/PDF: pivot rows first, then legacy single FK.
+     *
+     * @return Collection<int, AutoProduct>
+     */
+    public function selectedVehicles(): Collection
+    {
+        $vehicles = $this->relationLoaded('autoProducts')
+            ? $this->autoProducts
+            : $this->autoProducts()->get();
+
+        if ($vehicles->isNotEmpty()) {
+            return $vehicles->values();
+        }
+
+        if ($this->autoProduct) {
+            return collect([$this->autoProduct]);
+        }
+
+        return collect();
+    }
+
     public function financialProduct(): BelongsTo
     {
         return $this->belongsTo(FinancialProduct::class, 'financial_product_id', 'product_id');
@@ -76,4 +114,3 @@ class FinanceApplication extends BaseUuidModel
         return $this->hasMany(CommunicationLog::class, 'app_id', 'app_id');
     }
 }
-

@@ -6,7 +6,16 @@ return [
     'status' => 'Status',
     'loan_amount' => 'Loan amount',
     'merchant' => 'Financing merchant',
-    'truck' => 'Truck product',
+    'truck' => 'Vehicle product',
+    'model_year' => 'Car / truck model year',
+    'vehicle_model' => 'Car / truck model',
+    'vehicle_name' => 'Car / truck name',
+    'vehicles_section' => 'Vehicles on this deal',
+    'vehicles_hint' => 'Add up to :max vehicles (for example a truck head and a trailer). Choose year, then model, then name.',
+    'add_vehicle' => 'Add vehicle',
+    'no_vehicles_selected' => 'No vehicles selected yet.',
+    'vehicle_already_added' => 'This vehicle is already on the application.',
+    'vehicle_limit' => 'You can add at most :max vehicles.',
     'product' => 'Financial product',
     'truck_price' => 'Total truck price',
     'down_payment' => 'Down payment',
@@ -94,7 +103,7 @@ return [
     'pdf_footer' => 'Confidential — internal use only',
     'draft' => [
         1 => [
-            'hint' => 'Step 1 of 3: Choose who finances the deal and which truck the customer wants.',
+            'hint' => 'Step 1 of 3: Choose who finances the deal and which vehicles the customer wants (up to 3).',
         ],
         2 => [
             'hint' => 'Step 2 of 3: Pick the financial product and enter prices, down payment, and loan amount.',

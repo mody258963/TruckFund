@@ -21,7 +21,11 @@ class DriveApplicationFormRenderer
     {
         $this->addBackgroundPage($pdf, $this->mapper->applicantTemplate());
 
-        $this->text($pdf, 21.1, 12.9, (string) $data['showroom'], 42);
+        // Custom CRM name on the left of the DRIVE logo; financial product on the right.
+        $this->text($pdf, 16.0, 7.8, (string) $data['logo_name'], 25, 13, true);
+        $this->text($pdf, 62.0, 7.8, (string) ($data['financial_product_name'] ?? ''), 30, 13, true);
+        // The original Showroom / Dealer line remains independently editable.
+        $this->text($pdf, 21.1, 12.9, (string) $data['showroom_agent'], 42, 11, true);
         $this->text($pdf, 60.0, 12.9, (string) $data['date'], 22);
 
         $this->markChoice($pdf, $data['title'], [
@@ -97,12 +101,9 @@ class DriveApplicationFormRenderer
         $this->text($pdf, 42.5, 42.9, (string) $data['income_variable'], 16);
         $this->text($pdf, 42.5, 45.3, (string) $data['income_total'], 16);
 
-        $this->text($pdf, 27.1, 50.8, (string) $data['brand'], 42);
-        $this->text($pdf, 27.1, 53.1, (string) $data['model'], 42);
-        $this->text($pdf, 27.1, 55.5, (string) $data['year'], 42);
-        $this->text($pdf, 27.1, 57.4, (string) $data['color'], 42, 8.5);
-        $this->text($pdf, 27.1, 59.6, (string) $data['engine_cc'], 42);
-        $this->text($pdf, 27.1, 61.9, (string) $data['options'], 42, 8);
+        $this->writeVehicleColumns($pdf, $data['vehicles'] ?? []);
+
+        // Deal totals stay on the original price / down-payment lines.
         $this->text($pdf, 27.1, 64.0, (string) $data['price'], 42);
         $this->text($pdf, 27.1, 66.2, (string) $data['down_payment'], 42);
         $this->text($pdf, 27.1, 68.3, (string) $data['tenor_years'], 42);
@@ -115,7 +116,43 @@ class DriveApplicationFormRenderer
         }
 
         $this->text($pdf, 22.2, 91.5, (string) $data['comments'], 68, 8);
-        $this->text($pdf, 69.0, 97.8, (string) $data['sales_officer'], 26, 8.5);
+        $this->text($pdf, 66.0, 97.4, (string) $data['sales_officer'], 29, 11, true);
+    }
+
+    /**
+     * Draw up to three vehicles as compact side-by-side columns across the
+     * English and Arabic halves of the "Requested Car" section.
+     *
+     * @param  list<array{brand?:string,name?:string,model?:string,year?:string}>  $vehicles
+     */
+    protected function writeVehicleColumns(Mpdf $pdf, array $vehicles): void
+    {
+        $vehicles = array_values(array_slice($vehicles, 0, 3));
+        if ($vehicles === []) {
+            return;
+        }
+
+        $count = count($vehicles);
+        $startX = 22.0;
+        $endX = 88.0;
+        $gap = 1.5;
+        $usable = $endX - $startX - ($gap * max(0, $count - 1));
+        $columnWidth = $usable / $count;
+        $fontSize = $count >= 3 ? 7.0 : ($count === 2 ? 7.5 : 8.5);
+
+        $rows = [
+            50.4 => 'brand',
+            53.0 => 'name',
+            55.6 => 'model',
+            58.2 => 'year',
+        ];
+
+        foreach ($vehicles as $index => $vehicle) {
+            $x = $startX + ($index * ($columnWidth + $gap));
+            foreach ($rows as $y => $key) {
+                $this->text($pdf, $x, $y, (string) ($vehicle[$key] ?? ''), $columnWidth, $fontSize);
+            }
+        }
     }
 
     protected function addBackgroundPage(Mpdf $pdf, string $imagePath): void
@@ -141,6 +178,7 @@ class DriveApplicationFormRenderer
         string $value,
         float $maxWidthPercent,
         float $fontSize = 9,
+        bool $bold = false,
     ): void {
         $value = trim($value);
         if ($value === '') {
@@ -151,7 +189,7 @@ class DriveApplicationFormRenderer
         $y = 297 * ($yPercent / 100);
         $width = 210 * ($maxWidthPercent / 100);
 
-        $pdf->SetFont('dejavusans', '', $fontSize);
+        $pdf->SetFont('dejavusans', $bold ? 'B' : '', $fontSize);
         $pdf->SetTextColor(15, 25, 80);
         $pdf->SetXY($x, $y);
         // Line height must clear Arabic glyph descenders; too-tight cells clip

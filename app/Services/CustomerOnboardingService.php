@@ -66,12 +66,16 @@ class CustomerOnboardingService
         return self::TOTAL_STEPS;
     }
 
+    /**
+     * @param  list<UploadedFile>  $incomeProofFiles
+     * @param  list<UploadedFile>  $commercialRegFiles
+     */
     public function saveStep(
         Customer $customer,
         int $step,
         array $data,
-        ?UploadedFile $incomeProofFile = null,
-        ?UploadedFile $commercialRegFile = null,
+        array $incomeProofFiles = [],
+        array $commercialRegFiles = [],
     ): Customer {
         match ($step) {
             1 => $this->customers->update($customer, collect($data)->only([
@@ -82,7 +86,7 @@ class CustomerOnboardingService
                 'city', 'area', 'address',
             ])->all()),
             4 => $this->saveReferences($customer, $data['references'] ?? []),
-            5 => $this->saveFinancialStep($customer, $data, $incomeProofFile, $commercialRegFile),
+            5 => $this->saveFinancialStep($customer, $data, $incomeProofFiles, $commercialRegFiles),
             6 => $this->saveExtraDocuments($customer, $data),
             default => null,
         };
@@ -120,22 +124,26 @@ class CustomerOnboardingService
         }
     }
 
+    /**
+     * @param  list<UploadedFile>  $incomeProofFiles
+     * @param  list<UploadedFile>  $commercialRegFiles
+     */
     protected function saveFinancialStep(
         Customer $customer,
         array $data,
-        ?UploadedFile $incomeProofFile,
-        ?UploadedFile $commercialRegFile,
+        array $incomeProofFiles,
+        array $commercialRegFiles,
     ): void {
         $this->saveFinancialData($customer, $data);
 
         $userId = Auth::id();
 
-        if ($incomeProofFile) {
-            $this->storeUpload($customer, $incomeProofFile, DocType::IncomeProof, $userId);
+        foreach ($incomeProofFiles as $file) {
+            $this->storeUpload($customer, $file, DocType::IncomeProof, $userId);
         }
 
-        if ($commercialRegFile) {
-            $this->storeUpload($customer, $commercialRegFile, DocType::CommercialReg, $userId);
+        foreach ($commercialRegFiles as $file) {
+            $this->storeUpload($customer, $file, DocType::CommercialReg, $userId);
         }
     }
 

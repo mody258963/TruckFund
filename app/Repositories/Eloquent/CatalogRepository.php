@@ -21,6 +21,7 @@ class CatalogRepository implements CatalogRepositoryInterface
 
                 if ($modelClass === AutoProduct::class) {
                     $builder->orWhere('brand', 'like', $s)
+                        ->orWhere('model', 'like', $s)
                         ->orWhere('chassis', 'like', $s)
                         ->orWhere('model_year', 'like', $s);
                 }

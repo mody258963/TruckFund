@@ -10,6 +10,7 @@ use App\Models\ApplicationDocument;
 use App\Models\FinanceApplication;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 class FinanceApplicationService
 {
@@ -38,9 +39,29 @@ class FinanceApplicationService
         throw new \LogicException('Unable to generate a finance application number.');
     }
 
-    public function update(FinanceApplication $app, array $data): FinanceApplication
+    /**
+     * @param  list<string>|null  $autoProductIds
+     */
+    public function update(FinanceApplication $app, array $data, ?array $autoProductIds = null): FinanceApplication
     {
-        return $this->applications->update($app, $data);
+        return DB::transaction(function () use ($app, $data, $autoProductIds) {
+            if ($autoProductIds !== null) {
+                $ids = array_values(array_unique(array_filter($autoProductIds)));
+                $data['auto_product_id'] = $ids[0] ?? null;
+            }
+
+            $app = $this->applications->update($app, $data);
+
+            if ($autoProductIds !== null) {
+                $sync = [];
+                foreach (array_values(array_unique(array_filter($autoProductIds))) as $index => $id) {
+                    $sync[$id] = ['sort_order' => $index];
+                }
+                $app->autoProducts()->sync($sync);
+            }
+
+            return $this->applications->findWithRelations($app->app_id) ?? $app->fresh();
+        });
     }
 
     public function submitForReview(FinanceApplication $app): FinanceApplication

@@ -48,7 +48,7 @@ class CatalogManager extends Component
         [$this->modelClass, $this->titleKey, $this->routeName, $this->fields] = match ($type) {
             'merchants' => [Merchant::class, 'nav.merchants', 'merchants', ['name', 'type', 'contact_email']],
             'financial-products' => [FinancialProduct::class, 'nav.financial_products', 'financial-products', ['name', 'product_code', 'percentage', 'description']],
-            'auto-products' => [AutoProduct::class, 'nav.auto_products', 'auto-products', ['brand', 'name', 'type', 'model_year', 'chassis', 'price']],
+            'auto-products' => [AutoProduct::class, 'nav.auto_products', 'auto-products', ['brand', 'name', 'model', 'type', 'model_year', 'chassis', 'price']],
             'suppliers' => [Supplier::class, 'nav.suppliers', 'suppliers', ['name', 'phone', 'address', 'governorate', 'truck_type', 'city']],
             default => throw new \InvalidArgumentException('Unknown catalog type'),
         };

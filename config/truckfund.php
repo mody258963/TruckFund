@@ -11,7 +11,12 @@ return [
     'image_max_width' => (int) env('TRUCKFUND_IMAGE_MAX_WIDTH', 1920),
     'image_jpeg_quality' => (int) env('TRUCKFUND_IMAGE_JPEG_QUALITY', 82),
     'storage_retention_months' => (int) env('TRUCKFUND_STORAGE_RETENTION_MONTHS', 6),
-    'drive_form_showroom' => env('TRUCKFUND_DRIVE_SHOWROOM', 'sara gamal'),
+    'drive_form_logo_name' => env(
+        'TRUCKFUND_DRIVE_LOGO_NAME',
+        env('TRUCKFUND_DRIVE_SHOWROOM', 'sara gamal'),
+    ),
+    'drive_form_showroom_agent' => env('TRUCKFUND_DRIVE_SHOWROOM_AGENT', ''),
+    'drive_form_sales_officer' => env('TRUCKFUND_DRIVE_SALES_OFFICER', ''),
 
     // The only accounts created by `truckfund:seed-demo`. Override the passwords
     // per environment; the defaults exist so a fresh install is never blank.

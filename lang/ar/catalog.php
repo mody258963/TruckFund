@@ -8,6 +8,7 @@ return [
     'percentage' => 'النسبة %',
     'description' => 'الوصف',
     'brand' => 'الماركة',
+    'model' => 'الموديل',
     'model_year' => 'سنة الموديل',
     'chassis' => 'الشاسيه / كود الكتالوج',
     'price' => 'السعر',

@@ -29,9 +29,9 @@ class CustomerOnboardingWizard extends Component
 
     public $idBack;
 
-    public $incomeProofFile;
+    public array $incomeProofFiles = [];
 
-    public $commercialRegFile;
+    public array $commercialRegFiles = [];
 
     public array $extraDocFiles = [];
 
@@ -100,13 +100,17 @@ class CustomerOnboardingWizard extends Component
         }
 
         if ($this->step === 5) {
-            $maxKb = config('truckfund.image_max_kb', 2048);
+            $maxKb = config('truckfund.document_max_kb', 10240);
             $this->validate([
                 'form.annual_sales_1yr' => 'nullable|numeric|min:0',
                 'form.annual_sales_2yr' => 'nullable|numeric|min:0',
+                'form.commercial_reg_type' => 'nullable|string|max:100',
+                'form.commercial_reg_num' => 'nullable|string|max:100',
                 'form.paid_in_capital' => 'nullable|numeric|min:0',
-                'incomeProofFile' => "nullable|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
-                'commercialRegFile' => "nullable|file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
+                'incomeProofFiles' => 'nullable|array|max:20',
+                'incomeProofFiles.*' => "file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
+                'commercialRegFiles' => 'nullable|array|max:20',
+                'commercialRegFiles.*' => "file|max:{$maxKb}|mimes:jpg,jpeg,png,webp,pdf",
             ]);
         }
 
@@ -114,24 +118,29 @@ class CustomerOnboardingWizard extends Component
             $this->uploadExtraDocument($onboarding);
         }
 
+        $wasFinalStep = $this->step === CustomerOnboardingService::TOTAL_STEPS;
+
         $this->customer = $onboarding->saveStep(
             $this->customer,
             $this->step,
             $this->form,
-            $this->step === 5 ? $this->incomeProofFile : null,
-            $this->step === 5 ? $this->commercialRegFile : null,
+            $this->step === 5 ? $this->incomeProofFiles : [],
+            $this->step === 5 ? $this->commercialRegFiles : [],
         );
 
-        if ($this->step < CustomerOnboardingService::TOTAL_STEPS) {
-            $this->step++;
+        if ($wasFinalStep) {
+            // Finishing the wizard used to leave the user on the same screen with
+            // no feedback, which looked like the button was dead.
+            $this->reset('extraDocFiles');
+            $this->redirect(route('customers.show', $this->customer), navigate: true);
+
+            return;
         }
 
-        if ($this->step === 5) {
-            $this->reset(['incomeProofFile', 'commercialRegFile']);
-        }
+        $this->step++;
 
         if ($this->step === 6) {
-            $this->reset('extraDocFiles');
+            $this->reset(['incomeProofFiles', 'commercialRegFiles']);
         }
 
         $this->customer->refresh();

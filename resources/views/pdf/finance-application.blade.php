@@ -16,9 +16,11 @@
         <tr>
             <td class="label">{{ __('finance.truck') }}</td>
             <td class="value">
-                @if($application->autoProduct)
-                    {{ $application->autoProduct->brand }} — {{ $application->autoProduct->name }}
-                    ({{ $application->autoProduct->model_year ?? '—' }}) · {{ $application->autoProduct->type->label() }}
+                @php($pdfVehicles = $application->selectedVehicles())
+                @if($pdfVehicles->isNotEmpty())
+                    @foreach($pdfVehicles as $vehicle)
+                        {{ $vehicle->label() }}@if(! $loop->last); @endif
+                    @endforeach
                 @else
                     —
                 @endif

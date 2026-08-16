@@ -6,6 +6,7 @@ use App\Enums\DocType;
 use App\Models\ApplicationDocument;
 use App\Models\AutoProduct;
 use App\Models\Customer;
+use App\Models\Document;
 use App\Models\FinancialProduct;
 use App\Models\Identification;
 use App\Models\Merchant;
@@ -57,10 +58,12 @@ class FinanceApplicationPdfTest extends TestCase
         ]);
         $autoProduct = AutoProduct::query()->create([
             'brand' => 'Volvo',
+            'model' => 'FH',
             'name' => 'FH16',
             'type' => 1,
             'chassis' => 'CH-PDF-001',
             'price' => 600000,
+            'model_year' => 2025,
             'is_active' => true,
         ]);
         $financialProduct = FinancialProduct::query()->create([
@@ -102,6 +105,22 @@ class FinanceApplicationPdfTest extends TestCase
             'monthly_income' => 25000,
         ]);
 
+        // Business-step uploads live on the customer and must reach the PDF too.
+        foreach ([
+            ['customers/income-1.jpg', DocType::IncomeProof],
+            ['customers/income-2.jpg', DocType::IncomeProof],
+            ['customers/reg-1.jpg', DocType::CommercialReg],
+        ] as [$path, $docType]) {
+            Storage::disk('documents')->put($path, $photo);
+            Document::query()->create([
+                'customer_id' => $customer->customer_id,
+                'doc_type' => $docType,
+                'file_url' => $path,
+                'uploaded_at' => now(),
+                'uploaded_by' => $user->user_id,
+            ]);
+        }
+
         $attachmentPdf = new Mpdf(['tempDir' => storage_path('framework/cache')]);
         $attachmentPdf->WriteHTML('First attachment page<pagebreak />Second attachment page');
         Storage::disk('documents')->put(
@@ -129,6 +148,12 @@ class FinanceApplicationPdfTest extends TestCase
         $this->assertTrue($attachments->contains(fn (array $a) => $a['type'] === 'image'));
         $this->assertNotNull($attachments->firstWhere('type', 'image')['absolute_path']);
 
+        // ID front + two income proofs + one commercial registration.
+        $this->assertSame(4, $attachments->where('type', 'image')->count());
+        foreach (['customers/income-1.jpg', 'customers/income-2.jpg', 'customers/reg-1.jpg'] as $path) {
+            $this->assertTrue($attachments->contains(fn (array $a) => $a['path'] === $path));
+        }
+
         $response = $this->actingAs($user)->get(route('finance.pdf', $app));
 
         $response->assertOk();
@@ -139,8 +164,8 @@ class FinanceApplicationPdfTest extends TestCase
             StreamReader::createByString($response->getContent()),
         );
 
-        // 2 form pages + 1 image page + 2 pages from the attached PDF.
-        $this->assertGreaterThanOrEqual(5, $pageCount);
+        // 2 form pages + 4 image pages + 2 pages from the attached PDF.
+        $this->assertSame(8, $pageCount);
         $this->assertGreaterThan(200000, strlen($response->getContent()));
     }
 

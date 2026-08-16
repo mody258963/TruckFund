@@ -123,14 +123,67 @@
                                 <flux:select.option value="{{ $m->merchant_id }}">{{ $m->name }}</flux:select.option>
                             @endforeach
                         </flux:select>
-                        <flux:select wire:key="draft-auto-product" wire:model="form.auto_product_id" label="{{ __('finance.truck') }}" class="md:col-span-2">
-                            <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
-                            @foreach($autoProducts as $t)
-                                <flux:select.option value="{{ $t->id }}">
-                                    {{ $t->brand }} — {{ $t->name }} ({{ $t->model_year ?? '—' }}) · {{ $t->type->label() }}
-                                </flux:select.option>
-                            @endforeach
-                        </flux:select>
+
+                        <div class="md:col-span-2 space-y-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('finance.vehicles_section') }}</p>
+                            <p class="text-xs text-zinc-500">{{ __('finance.vehicles_hint', ['max' => $maxVehicles]) }}</p>
+
+                            <div class="grid gap-3 md:grid-cols-3">
+                                <flux:select wire:key="draft-model-year" wire:model.live="selectedModelYear" label="{{ __('finance.model_year') }}">
+                                    <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
+                                    @foreach($modelYears as $year)
+                                        <flux:select.option value="{{ $year }}">{{ $year }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:select
+                                    wire:key="draft-vehicle-model-{{ $selectedModelYear ?? 'none' }}"
+                                    wire:model.live="selectedModel"
+                                    label="{{ __('finance.vehicle_model') }}"
+                                    :disabled="$selectedModelYear === null"
+                                >
+                                    <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
+                                    @foreach($modelOptions as $model)
+                                        <flux:select.option value="{{ $model }}">{{ $model }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:select
+                                    wire:key="draft-vehicle-name-{{ $selectedModelYear ?? 'none' }}-{{ $selectedModel ?? 'none' }}"
+                                    wire:model="pendingVehicleId"
+                                    label="{{ __('finance.vehicle_name') }}"
+                                    :disabled="$selectedModel === null"
+                                >
+                                    <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
+                                    @foreach($nameOptions as $vehicle)
+                                        <flux:select.option value="{{ $vehicle->id }}">
+                                            {{ $vehicle->brand }} — {{ $vehicle->name }} · {{ $vehicle->type->label() }}
+                                        </flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                <flux:button type="button" wire:click="addVehicle" variant="primary" size="sm">
+                                    {{ __('finance.add_vehicle') }}
+                                </flux:button>
+                                @error('pendingVehicleId')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                                @error('selectedVehicleIds')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                            </div>
+
+                            @if($selectedVehicles->isNotEmpty())
+                                <ul class="space-y-2">
+                                    @foreach($selectedVehicles as $vehicle)
+                                        <li wire:key="selected-vehicle-{{ $vehicle->id }}" class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+                                            <span>{{ $vehicle->label() }} · {{ $vehicle->type->label() }}</span>
+                                            <flux:button type="button" wire:click="removeVehicle(@js($vehicle->id))" size="sm" variant="danger">
+                                                {{ __('common.remove') }}
+                                            </flux:button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p class="text-sm text-zinc-500">{{ __('finance.no_vehicles_selected') }}</p>
+                            @endif
+                        </div>
                     @elseif($wizardStep === 2)
                         <flux:select wire:key="draft-financial-product" wire:model="form.financial_product_id" label="{{ __('finance.product') }}" class="md:col-span-2">
                             <flux:select.option value="">{{ __('common.select') }}</flux:select.option>
@@ -236,9 +289,13 @@
                     <div class="flex justify-between gap-2">
                         <dt class="text-zinc-500">{{ __('finance.truck') }}</dt>
                         <dd class="text-end">
-                            @if($application->autoProduct)
-                                {{ $application->autoProduct->brand }} — {{ $application->autoProduct->name }}
-                                ({{ $application->autoProduct->model_year ?? '—' }}) · {{ $application->autoProduct->type->label() }}
+                            @php($summaryVehicles = $application->selectedVehicles())
+                            @if($summaryVehicles->isNotEmpty())
+                                <ul class="space-y-1">
+                                    @foreach($summaryVehicles as $vehicle)
+                                        <li>{{ $vehicle->label() }} · {{ $vehicle->type->label() }}</li>
+                                    @endforeach
+                                </ul>
                             @else
                                 —
                             @endif

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Services\DrivePdfSettings;
 use App\Services\StorageCleanupService;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -19,11 +20,29 @@ class Settings extends Component
 
     public bool $scanned = false;
 
-    public function mount(): void
+    public array $drivePdf = [];
+
+    public function mount(DrivePdfSettings $pdfSettings): void
     {
         abort_unless(auth()->user()?->isAdmin(), 403);
         $cutoff = app(StorageCleanupService::class)->retentionCutoff();
         $this->cutoffDate = $cutoff->toDateString();
+        $this->drivePdf = $pdfSettings->values();
+    }
+
+    public function saveDrivePdfSettings(DrivePdfSettings $pdfSettings): void
+    {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
+        $validated = $this->validate([
+            'drivePdf.logo_name' => ['required', 'string', 'max:120'],
+            'drivePdf.showroom_agent' => ['nullable', 'string', 'max:120'],
+            'drivePdf.sales_officer' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $pdfSettings->save($validated['drivePdf']);
+        $this->drivePdf = $pdfSettings->values();
+        $this->dispatch('notify', message: __('settings.drive_pdf_saved'));
     }
 
     public function scan(StorageCleanupService $cleanup): void

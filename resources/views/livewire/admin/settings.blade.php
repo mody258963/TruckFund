@@ -18,6 +18,34 @@
         </div>
     </div>
 
+    <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <flux:heading size="lg" class="mb-2">{{ __('settings.drive_pdf_title') }}</flux:heading>
+        <p class="mb-4 text-sm text-zinc-500">{{ __('settings.drive_pdf_desc') }}</p>
+
+        <form wire:submit="saveDrivePdfSettings" class="grid gap-4 md:grid-cols-3">
+            <flux:input
+                wire:model="drivePdf.logo_name"
+                label="{{ __('settings.drive_pdf_logo_name') }}"
+                maxlength="120"
+            />
+            <flux:input
+                wire:model="drivePdf.showroom_agent"
+                label="{{ __('settings.drive_pdf_showroom_agent') }}"
+                maxlength="120"
+            />
+            <flux:input
+                wire:model="drivePdf.sales_officer"
+                label="{{ __('settings.drive_pdf_sales_officer') }}"
+                maxlength="120"
+            />
+            <div class="md:col-span-3">
+                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveDrivePdfSettings">
+                    {{ __('common.save') }}
+                </flux:button>
+            </div>
+        </form>
+    </div>
+
     <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <flux:heading size="lg" class="mb-2">{{ __('settings.cleanup_title') }}</flux:heading>
         <p class="mb-4 text-sm text-zinc-500">

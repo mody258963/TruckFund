@@ -5,7 +5,6 @@ namespace App\Repositories\Eloquent;
 use App\Contracts\Repositories\FinanceApplicationRepositoryInterface;
 use App\Enums\ApplicationStatus;
 use App\Models\FinanceApplication;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class FinanceApplicationRepository extends EloquentRepository implements FinanceApplicationRepositoryInterface
@@ -27,6 +26,7 @@ class FinanceApplicationRepository extends EloquentRepository implements Finance
                 'user',
                 'merchant',
                 'autoProduct',
+                'autoProducts',
                 'financialProduct',
                 'applicationDocuments',
                 'communicationLogs',

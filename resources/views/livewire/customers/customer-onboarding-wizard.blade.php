@@ -8,6 +8,10 @@
     </div>
     <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <form wire:submit="saveStep">
+            {{-- Each step renders different components in the same slot; without a
+                 per-step key Livewire morphs them into each other and the surviving
+                 Alpine state breaks clicks on the next step. --}}
+            <div wire:key="onboarding-step-{{ $step }}">
             @if($step === 1)
                 <flux:input wire:model="form.display_name" label="{{ __('customers.name') }}" />
                 <flux:input wire:model="form.mobile_number" label="{{ __('customers.mobile') }}" class="mt-3" />
@@ -41,8 +45,8 @@
                 </div>
                 <flux:input wire:model="form.org_name" label="{{ __('customers.org_name') }}" class="mt-3" />
                 <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                    <flux:input wire:model="form.commercial_reg_type" type="number" label="{{ __('customers.commercial_reg_type') }}" />
-                    <flux:input wire:model="form.commercial_reg_num" label="{{ __('customers.commercial_reg_num') }}" />
+                    <flux:input wire:model="form.commercial_reg_type" maxlength="100" label="{{ __('customers.commercial_reg_type') }}" />
+                    <flux:input wire:model="form.commercial_reg_num" maxlength="100" label="{{ __('customers.commercial_reg_num') }}" />
                 </div>
                 <div class="mt-3 grid gap-3 sm:grid-cols-2">
                     <flux:input wire:model="form.reg_start_date" type="date" label="{{ __('customers.reg_start_date') }}" />
@@ -53,19 +57,48 @@
                 <flux:textarea wire:model="form.org_address" label="{{ __('customers.org_address') }}" class="mt-3" />
                 <div class="mt-6 space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ __('customers.attachments') }}</p>
-                    <x-wire-file-input wire:model="incomeProofFile" accept="image/*,application/pdf" :label="__('customers.income_proof_file')" />
+                    <p class="text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('truckfund.document_max_kb', 10240)]) }}</p>
+
+                    <x-wire-file-input
+                        wire:key="income-proof-files"
+                        wire:model="incomeProofFiles"
+                        multiple
+                        accept="image/*,application/pdf"
+                        :label="__('customers.income_proof_file')"
+                    />
+                    @error('incomeProofFiles')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                    @foreach($incomeProofFiles as $index => $file)
+                        <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                            {{ $file->getClientOriginalName() }}
+                            @error('incomeProofFiles.'.$index)<span class="text-red-600">— {{ $message }}</span>@enderror
+                        </p>
+                    @endforeach
                     @if($uploadedDocs->has('IncomeProof'))
                         <ul class="text-xs text-teal-600">
                             @foreach($uploadedDocs->get('IncomeProof') as $doc)
-                                <li>✓ {{ $doc->doc_type->label() }} — {{ basename($doc->file_url) }}</li>
+                                <li wire:key="income-proof-{{ $doc->doc_id }}">✓ {{ $doc->doc_type->label() }} — {{ basename($doc->file_url) }}</li>
                             @endforeach
                         </ul>
                     @endif
-                    <x-wire-file-input wire:model="commercialRegFile" accept="image/*,application/pdf" :label="__('customers.commercial_reg_file')" />
+
+                    <x-wire-file-input
+                        wire:key="commercial-reg-files"
+                        wire:model="commercialRegFiles"
+                        multiple
+                        accept="image/*,application/pdf"
+                        :label="__('customers.commercial_reg_file')"
+                    />
+                    @error('commercialRegFiles')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                    @foreach($commercialRegFiles as $index => $file)
+                        <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                            {{ $file->getClientOriginalName() }}
+                            @error('commercialRegFiles.'.$index)<span class="text-red-600">— {{ $message }}</span>@enderror
+                        </p>
+                    @endforeach
                     @if($uploadedDocs->has('CommercialReg'))
                         <ul class="text-xs text-teal-600">
                             @foreach($uploadedDocs->get('CommercialReg') as $doc)
-                                <li>✓ {{ $doc->doc_type->label() }} — {{ basename($doc->file_url) }}</li>
+                                <li wire:key="commercial-reg-{{ $doc->doc_id }}">✓ {{ $doc->doc_type->label() }} — {{ basename($doc->file_url) }}</li>
                             @endforeach
                         </ul>
                     @endif
@@ -73,12 +106,13 @@
             @elseif($step === 6)
                 <p class="mb-4 text-sm text-zinc-500">{{ __('customers.extra_docs_hint') }}</p>
                 <p class="mb-2 text-xs text-zinc-500">{{ __('settings.upload_hint', ['max' => config('truckfund.document_max_kb', 10240)]) }}</p>
-                <flux:select wire:model="extraDocType" label="{{ __('customers.extra_doc_type') }}">
+                <flux:select wire:key="extra-doc-type" wire:model="extraDocType" label="{{ __('customers.extra_doc_type') }}">
                     @foreach($extraDocTypes as $type)
                         <flux:select.option value="{{ $type->value }}">{{ $type->label() }}</flux:select.option>
                     @endforeach
                 </flux:select>
                 <x-wire-file-input
+                    wire:key="extra-doc-files"
                     wire:model="extraDocFiles"
                     multiple
                     accept="image/*,application/pdf"
@@ -100,14 +134,22 @@
                 <div class="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
                     <p class="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">{{ __('customers.extra_docs_list') }}</p>
                     @forelse($extraDocuments as $doc)
-                        <div class="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
+                        <div wire:key="extra-doc-{{ $doc->doc_id }}" class="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700">
                             <div>
                                 <span class="font-medium">{{ $doc->doc_type->label() }}</span>
                                 <span class="text-zinc-500"> — {{ basename($doc->file_url) }}</span>
                             </div>
                             <div class="flex gap-2">
                                 <flux:button href="{{ $images->url($doc->file_url) }}" size="sm" variant="ghost" target="_blank">{{ __('common.view') }}</flux:button>
-                                <flux:button type="button" wire:click="removeDocument(@js($doc->doc_id))" wire:confirm="{{ __('customers.remove_doc_confirm') }}" size="sm" variant="danger">{{ __('common.remove') }}</flux:button>
+                                <flux:button
+                                    type="button"
+                                    wire:click="removeDocument(@js($doc->doc_id))"
+                                    wire:confirm="{{ __('customers.remove_doc_confirm') }}"
+                                    wire:loading.attr="disabled"
+                                    wire:target="removeDocument(@js($doc->doc_id))"
+                                    size="sm"
+                                    variant="danger"
+                                >{{ __('common.remove') }}</flux:button>
                             </div>
                         </div>
                     @empty
@@ -115,13 +157,16 @@
                     @endforelse
                 </div>
             @endif
+            </div>
             <div class="mt-6 flex justify-between">
                 @if($step > 1)
                     <flux:button type="button" wire:click="previous" variant="ghost">{{ __('common.back') }}</flux:button>
                 @else
                     <span></span>
                 @endif
-                <flux:button type="submit" variant="primary">{{ $step < $totalSteps ? __('common.next') : __('customers.complete') }}</flux:button>
+                <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="saveStep">
+                    {{ $step < $totalSteps ? __('common.next') : __('customers.complete') }}
+                </flux:button>
             </div>
         </form>
     </div>
