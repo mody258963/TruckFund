@@ -13,7 +13,10 @@ use Mpdf\Mpdf;
 class DriveApplicationFormRenderer
 {
     /** Every overlaid value is enlarged by this factor over the calibrated size. */
-    protected const TEXT_SCALE = 1.25;
+    protected const TEXT_SCALE = 1.7;
+
+    /** Long values shrink instead of wrapping once they exceed their field width. */
+    protected const MIN_FONT_SIZE = 7.5;
 
     /** Overlay values print in solid black so they stay legible over the grey scan. */
     protected const TEXT_COLOR = [0, 0, 0];
@@ -176,6 +179,10 @@ class DriveApplicationFormRenderer
             'mgf' => 0,
         ]);
 
+        // Overlaid values sit near the page edge; without this a bottom-row value
+        // would trigger an auto page break and add a blank page to the document.
+        $pdf->SetAutoPageBreak(false);
+
         // Stretch the blank scan to fill the printable page.
         $pdf->Image($imagePath, 0, 0, 210, 297, '', '', true, false);
     }
@@ -211,6 +218,12 @@ class DriveApplicationFormRenderer
         $fontSize *= self::TEXT_SCALE;
 
         $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
+        // Shrink rather than wrap: a wrapped line would spill onto the field below.
+        while ($fontSize > self::MIN_FONT_SIZE && $pdf->GetStringWidth($value) > $width) {
+            $fontSize = max(self::MIN_FONT_SIZE, $fontSize - 0.25);
+            $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
+        }
+
         $pdf->SetTextColor(...self::TEXT_COLOR);
         $pdf->SetXY($x, $y);
         // Line height must clear Arabic glyph descenders; too-tight cells clip
