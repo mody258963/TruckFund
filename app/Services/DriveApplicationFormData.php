@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\DocType;
 use App\Enums\Gender;
 use App\Models\FinanceApplication;
 use Illuminate\Support\Facades\File;
@@ -81,7 +82,8 @@ class DriveApplicationFormData
             'type' => '',
         ];
 
-        $isSelfEmployed = filled($fin?->org_name);
+        $hasBusinessInfo = $this->hasBusinessInfo($fin, $customer?->documents);
+        $isSelfEmployed = $hasBusinessInfo;
 
         return [
             'logo_name' => $pdfSettings['logo_name'],
@@ -89,12 +91,14 @@ class DriveApplicationFormData
             'showroom_agent' => $pdfSettings['showroom_agent'],
             // Legacy key retained for callers that still expect it.
             'showroom' => $pdfSettings['showroom_agent'],
-            'date' => now()->format('d/m/Y'),
+            'date' => $this->spacedDate(now()),
             'title' => 'Mr',
             'name_en' => $nameEn,
             'name_ar' => $nameAr,
             'name_combined' => $fullName,
-            'dob' => $customer?->date_of_birth?->format('d/m/Y') ?? '',
+            'dob' => $customer?->date_of_birth
+                ? $this->spacedDate($customer->date_of_birth)
+                : '',
             'gender' => $customer?->gender === Gender::Female ? 'F' : 'M',
             'nationality' => 'Egyptian',
             'id_type' => 'Egyptian',
@@ -113,7 +117,8 @@ class DriveApplicationFormData
             'ref_address' => $refAddress,
             'ref_phone' => (string) ($reference?->mobile ?? ''),
             'employment' => $isSelfEmployed ? 'Self-Employed' : 'Salaried',
-            'job_title' => $isSelfEmployed ? 'صاحب منشأة' : (string) ($customer?->occupation ?? ''),
+            // Business profile present → business owner; otherwise vehicle owner.
+            'job_title' => $hasBusinessInfo ? 'صاحب عمل' : 'صاحب سياره',
             'job_duration' => '',
             'company_name' => (string) ($fin?->org_name ?: $customer?->organization_name ?: ''),
             'business_type' => (string) ($fin?->commercial_reg_type ?? ''),
@@ -137,13 +142,51 @@ class DriveApplicationFormData
             'tenor_years' => '',
             'docs_id' => (bool) ($ident?->id_front_url || $ident?->id_back_url),
             'docs_residence' => $customer?->documents?->isNotEmpty() ?? false,
-            'comments' => $application->customer?->lead?->lead_number
-                ? 'Lead '.$application->customer->lead->lead_number
-                : '',
+            'comments' => '',
             'sales_officer' => $pdfSettings['sales_officer'] !== ''
                 ? $pdfSettings['sales_officer']
                 : (string) ($application->user?->full_name ?? ''),
         ];
+    }
+
+    /**
+     * True when the customer entered business-step fields or uploaded business docs.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Document>|null  $documents
+     */
+    protected function hasBusinessInfo(mixed $fin, mixed $documents): bool
+    {
+        if ($fin) {
+            foreach ([
+                $fin->org_name,
+                $fin->commercial_reg_type,
+                $fin->commercial_reg_num,
+                $fin->org_address,
+                $fin->org_city,
+            ] as $value) {
+                if (filled($value)) {
+                    return true;
+                }
+            }
+
+            if ($fin->has_income_proof) {
+                return true;
+            }
+
+            if ($fin->annual_sales_1yr || $fin->annual_sales_2yr || $fin->paid_in_capital) {
+                return true;
+            }
+        }
+
+        if ($documents) {
+            return $documents->contains(fn ($doc) => in_array(
+                $doc->doc_type,
+                [DocType::IncomeProof, DocType::CommercialReg],
+                true,
+            ));
+        }
+
+        return false;
     }
 
     protected function money(mixed $value): string
@@ -153,6 +196,24 @@ class DriveApplicationFormData
         }
 
         return number_format((float) $value, 0, '.', ',');
+    }
+
+    /** Space digits so they land on the DRIVE form's dotted date boxes. */
+    protected function spacedDate(\DateTimeInterface $date): string
+    {
+        $digits = $date->format('dmY');
+
+        return sprintf(
+            '%s %s / %s %s / %s %s %s %s',
+            $digits[0],
+            $digits[1],
+            $digits[2],
+            $digits[3],
+            $digits[4],
+            $digits[5],
+            $digits[6],
+            $digits[7],
+        );
     }
 
     public function applicantTemplate(): string

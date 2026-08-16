@@ -92,10 +92,39 @@ class DrivePdfSettingsTest extends TestCase
         $this->assertSame('Logo Side Name', $mapped['logo_name']);
         // No identification step yet, so nothing falls back onto the name line.
         $this->assertSame('', $mapped['name_combined']);
+        // No business-step data → vehicle owner title on the DRIVE form.
+        $this->assertSame('صاحب سياره', $mapped['job_title']);
+        $this->assertSame('', $mapped['comments']);
         $this->assertSame('Drive Loan 60m', $mapped['financial_product_name']);
         $this->assertSame('Alex Showroom', $mapped['showroom_agent']);
         $this->assertSame('Alex Showroom', $mapped['showroom']);
         $this->assertSame('CRM Sales Name', $mapped['sales_officer']);
+    }
+
+    public function test_drive_pdf_job_title_uses_business_owner_when_business_data_exists(): void
+    {
+        $user = User::factory()->financeOfficer()->create();
+        $customer = Customer::query()->create([
+            'display_name' => 'Business Customer',
+            'mobile_number' => '01001110011',
+        ]);
+        \App\Models\FinancialData::query()->create([
+            'customer_id' => $customer->customer_id,
+            'org_name' => 'شركة النقل السريع',
+        ]);
+        $application = app(FinanceApplicationService::class)->createDraft([
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'down_payment' => 0,
+            'total_loan_amount' => 0,
+            'total_truck_price' => 0,
+        ]);
+
+        $mapped = app(DriveApplicationFormData::class)->fromApplication(
+            $application->load(['customer.financialData', 'customer.documents']),
+        );
+
+        $this->assertSame('صاحب عمل', $mapped['job_title']);
     }
 
     public function test_blank_sales_officer_setting_falls_back_to_application_user(): void

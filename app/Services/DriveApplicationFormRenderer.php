@@ -47,12 +47,12 @@ class DriveApplicationFormRenderer
         $this->headerText($pdf, 60.0, 2.6, (string) ($data['financial_product_name'] ?? ''), 34);
         // The original Showroom / Dealer line remains independently editable.
         $this->headerText($pdf, 21.1, 12.6, (string) $data['showroom_agent'], 42, 11);
-        $this->text($pdf, 60.0, 12.9, (string) $data['date'], 22);
-
+        // Spaced digits sit on the dotted day / month / year boxes.
+        $this->text($pdf, 58.5, 12.2, (string) $data['date'], 30, 12);
         // Applicant name is the headline field on the form, so it prints largest,
         // centred across the full width of its line.
         $this->text($pdf, 21.1, 26.5, (string) $data['name_combined'], 58, 13, 'C');
-        $this->text($pdf, 37.0, 31.8, (string) $data['dob'], 22);
+        $this->text($pdf, 37.0, 31.4, (string) $data['dob'], 30, 11);
         // A 14-digit national ID needs more room than the other short fields.
         $this->text($pdf, 37.0, 40.4, (string) $data['id_number'], 30);
 
@@ -90,12 +90,13 @@ class DriveApplicationFormRenderer
         $this->writeVehicleColumns($pdf, $data['vehicles'] ?? []);
 
         // Deal totals stay on the original price / down-payment lines.
-        $this->text($pdf, 27.1, 64.0, (string) $data['price'], 42);
-        $this->text($pdf, 27.1, 66.2, (string) $data['down_payment'], 42);
+        $this->text($pdf, 27.1, 63.2, (string) $data['price'], 42);
+        $this->text($pdf, 27.1, 65.4, (string) $data['down_payment'], 42);
         $this->text($pdf, 27.1, 68.3, (string) $data['tenor_years'], 42);
 
         $this->text($pdf, 22.2, 91.5, (string) $data['comments'], 68, 8);
-        $this->headerText($pdf, 66.0, 97.1, (string) $data['sales_officer'], 30, 11);
+        // Sit against the right edge of the sales-officer line.
+        $this->headerText($pdf, 58.0, 97.1, (string) $data['sales_officer'], 36, 11, 'R');
     }
 
     /**
@@ -130,7 +131,7 @@ class DriveApplicationFormRenderer
         foreach ($vehicles as $index => $vehicle) {
             $x = $startX + ($index * ($columnWidth + $gap));
             foreach ($rows as [$y, $key]) {
-                $this->text($pdf, $x, $y, (string) ($vehicle[$key] ?? ''), $columnWidth, $fontSize);
+                $this->text($pdf, $x, $y, (string) ($vehicle[$key] ?? ''), $columnWidth, $fontSize, 'C');
             }
         }
     }
@@ -163,8 +164,9 @@ class DriveApplicationFormRenderer
         string $value,
         float $maxWidthPercent,
         float $fontSize = 13,
+        string $align = 'L',
     ): void {
-        $this->text($pdf, $xPercent, $yPercent, $value, $maxWidthPercent, $fontSize);
+        $this->text($pdf, $xPercent, $yPercent, $value, $maxWidthPercent, $fontSize, $align);
     }
 
     protected function text(
