@@ -10,6 +10,7 @@ use App\Models\FinancialProduct;
 use App\Models\Identification;
 use App\Models\Merchant;
 use App\Models\User;
+use App\Services\DriveApplicationFormData;
 use App\Services\FinanceApplicationPdfService;
 use App\Services\FinanceApplicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,17 +73,21 @@ class FinanceApplicationPdfTest extends TestCase
         $customer = Customer::query()->create([
             'display_name' => 'PDF Customer',
             'mobile_number' => '01001112233',
-            'city' => 'Cairo',
-            'address' => '123 Main St',
+            'city' => 'القاهرة',
+            'area' => 'المعادي',
+            'address' => '15 شارع 9',
         ]);
 
-        Storage::disk('documents')->put('customers/id-front.png', $this->largePngBytes());
+        // Use the real DRIVE template JPG so Image() embeds a non-trivial photo.
+        $photo = file_get_contents(resource_path('pdf-forms/drive-application-applicant.jpg'));
+        Storage::disk('documents')->put('customers/id-front.jpg', $photo);
         Identification::query()->create([
             'customer_id' => $customer->customer_id,
             'id_type' => 1,
             'id_number' => '12345678901234',
             'name_en' => 'PDF Customer',
-            'id_front_url' => 'customers/id-front.png',
+            'name_ar' => 'عميل تجريبي',
+            'id_front_url' => 'customers/id-front.jpg',
         ]);
 
         $app = app(FinanceApplicationService::class)->createDraft([
@@ -114,6 +119,16 @@ class FinanceApplicationPdfTest extends TestCase
         $pdfService = app(FinanceApplicationPdfService::class);
         $this->assertTrue($pdfService->canGenerate($app));
 
+        $loaded = $pdfService->loadForPdf($app->app_id);
+        $mapped = app(DriveApplicationFormData::class)->fromApplication($loaded);
+        $this->assertStringContainsString('15 شارع 9', $mapped['home_address']);
+        $this->assertStringContainsString('المعادي', $mapped['home_address']);
+        $this->assertStringContainsString('القاهرة', $mapped['home_address']);
+
+        $attachments = $pdfService->collectAttachments($loaded);
+        $this->assertTrue($attachments->contains(fn (array $a) => $a['type'] === 'image'));
+        $this->assertNotNull($attachments->firstWhere('type', 'image')['absolute_path']);
+
         $response = $this->actingAs($user)->get(route('finance.pdf', $app));
 
         $response->assertOk();
@@ -124,37 +139,24 @@ class FinanceApplicationPdfTest extends TestCase
             StreamReader::createByString($response->getContent()),
         );
 
+        // 2 form pages + 1 image page + 2 pages from the attached PDF.
         $this->assertGreaterThanOrEqual(5, $pageCount);
+        $this->assertGreaterThan(200000, strlen($response->getContent()));
     }
 
-    /**
-     * A truecolor PNG of random noise, built without ext-gd. Noise compresses
-     * poorly, so the file exceeds pcre.backtrack_limit once base64 encoded.
-     */
-    private function largePngBytes(): string
+    public function test_legacy_document_path_prefixes_still_resolve(): void
     {
-        $width = 700;
-        $height = 700;
+        Storage::fake('documents');
+        Storage::disk('documents')->put('customers/old-id.jpg', 'fake-image');
 
-        $raw = '';
-        for ($row = 0; $row < $height; $row++) {
-            $raw .= "\x00".random_bytes($width * 3);
-        }
+        $service = app(FinanceApplicationPdfService::class);
+        $method = new \ReflectionMethod($service, 'attachmentEntry');
+        $method->setAccessible(true);
 
-        $header = pack('NNCCCCC', $width, $height, 8, 2, 0, 0, 0);
+        $entry = $method->invoke($service, 'ID', 'documents/customers/old-id.jpg');
 
-        $bytes = "\x89PNG\r\n\x1a\n"
-            .$this->pngChunk('IHDR', $header)
-            .$this->pngChunk('IDAT', (string) gzcompress($raw))
-            .$this->pngChunk('IEND', '');
-
-        $this->assertGreaterThan(1000000, strlen(base64_encode($bytes)));
-
-        return $bytes;
-    }
-
-    private function pngChunk(string $type, string $data): string
-    {
-        return pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
+        $this->assertSame('image', $entry['type']);
+        $this->assertSame('customers/old-id.jpg', $entry['path']);
+        $this->assertNotNull($entry['absolute_path']);
     }
 }

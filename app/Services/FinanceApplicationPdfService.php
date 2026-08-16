@@ -7,7 +7,6 @@ use App\Models\FinanceApplication;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
 
@@ -102,11 +101,6 @@ class FinanceApplicationPdfService
             $this->formRenderer->writeApplicantPage($pdf, $formValues);
             $this->formRenderer->writeEmploymentPage($pdf, $formValues);
 
-            $pdf->WriteHTML(
-                view('pdf.finance-application-styles')->render(),
-                HTMLParserMode::HEADER_CSS,
-            );
-
             $this->appendImageAttachments($pdf, $attachments->where('type', 'image'));
             $this->appendPdfAttachments($pdf, $attachments->where('type', 'pdf'));
 
@@ -126,7 +120,7 @@ class FinanceApplicationPdfService
     /** @return array{label: string, path: string, type: 'image'|'pdf'|'unsupported', absolute_path: ?string} */
     protected function attachmentEntry(string $label, ?string $path): array
     {
-        $path = $path ?? '';
+        $path = $this->normalizeStoredPath($path);
         $type = match (true) {
             $path !== '' && $this->images->isImagePath($path) => 'image',
             (bool) preg_match('/\.pdf$/i', $path) => 'pdf',
@@ -141,20 +135,61 @@ class FinanceApplicationPdfService
         ];
     }
 
+    /**
+     * Older rows sometimes stored a leading slash or a disk prefix; normalize
+     * so lookups against storage/app/documents still resolve.
+     */
+    protected function normalizeStoredPath(?string $path): string
+    {
+        $path = trim((string) $path);
+        if ($path === '') {
+            return '';
+        }
+
+        $path = str_replace('\\', '/', $path);
+        $path = ltrim($path, '/');
+
+        foreach (['documents/', 'storage/app/documents/', 'app/documents/'] as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                $path = substr($path, strlen($prefix));
+                break;
+            }
+        }
+
+        return $path;
+    }
+
     /** @param Collection<int, array{label: string, absolute_path: string}> $attachments */
     protected function appendImageAttachments(Mpdf $pdf, Collection $attachments): void
     {
         foreach ($attachments as $attachment) {
+            $imagePath = str_replace('\\', '/', $attachment['absolute_path']);
+
             $pdf->AddPageByArray([
                 'orientation' => 'P',
                 'mgl' => 12,
                 'mgr' => 12,
-                'mgt' => 12,
+                'mgt' => 16,
                 'mgb' => 12,
             ]);
-            $pdf->WriteHTML(
-                view('pdf.finance-application-attachment', ['attachment' => $attachment])->render(),
-                HTMLParserMode::HTML_BODY,
+
+            $pdf->SetFont('dejavusans', '', 12);
+            $pdf->SetTextColor(17, 24, 39);
+            $pdf->SetXY(12, 10);
+            $pdf->MultiCell(186, 6, $attachment['label'], 0, 'R');
+
+            // Embed via Image() — WriteHTML <img> often leaves a blank page for
+            // large / Windows-path photos, especially on older applications.
+            $pdf->Image(
+                $imagePath,
+                12,
+                22,
+                186,
+                255,
+                '',
+                '',
+                true,
+                true,
             );
         }
     }

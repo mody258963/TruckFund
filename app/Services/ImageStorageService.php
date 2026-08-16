@@ -69,11 +69,13 @@ class ImageStorageService
 
     public function absolutePath(string $path): ?string
     {
+        $path = str_replace('\\', '/', ltrim($path, '/'));
+
         if (! $this->exists($path)) {
             return null;
         }
 
-        return Storage::disk(self::DISK)->path($path);
+        return str_replace('\\', '/', Storage::disk(self::DISK)->path($path));
     }
 
     public function encodePath(string $path): string

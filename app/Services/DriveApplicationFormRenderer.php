@@ -49,7 +49,8 @@ class DriveApplicationFormRenderer
         ]);
         $this->text($pdf, 37.0, 40.4, (string) $data['id_number'], 22);
 
-        $this->text($pdf, 21.1, 48.5, (string) $data['home_address'], 55, 8.5);
+        // Sit just under the "Home Address" label on the dotted line.
+        $this->text($pdf, 21.1, 48.2, (string) $data['home_address'], 55, 9);
         $this->markChoice($pdf, $data['home_ownership'], [
             'Own' => [20.7, 51.8],
             'New Rent' => [34.5, 51.9],
@@ -59,7 +60,7 @@ class DriveApplicationFormRenderer
         $this->text($pdf, 21.1, 57.3, (string) $data['home_duration'], 55);
         $this->text($pdf, 21.1, 59.9, (string) $data['phone_mobile'], 55);
         // Email intentionally skipped.
-        $this->text($pdf, 21.1, 66.0, (string) $data['prev_address'], 55, 8);
+        $this->text($pdf, 21.1, 66.0, (string) $data['prev_address'], 55, 8.5);
         $this->markChoice($pdf, $data['prev_ownership'], [
             'Own' => [20.4, 68.5],
             'New Rent' => [34.2, 68.7],
@@ -153,7 +154,9 @@ class DriveApplicationFormRenderer
         $pdf->SetFont('dejavusans', '', $fontSize);
         $pdf->SetTextColor(15, 25, 80);
         $pdf->SetXY($x, $y);
-        $pdf->MultiCell($width, $fontSize * 0.45, $value, 0, 'L');
+        // Line height must clear Arabic glyph descenders; too-tight cells clip
+        // longer address lines so they look "missing" on the form.
+        $pdf->MultiCell($width, max(4.2, $fontSize * 0.55), $value, 0, 'L');
     }
 
     /** @param array<string, array{0:float,1:float}> $choices */

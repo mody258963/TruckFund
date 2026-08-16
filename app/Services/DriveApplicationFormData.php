@@ -28,16 +28,31 @@ class DriveApplicationFormData
             $customer?->address,
             $customer?->area,
             $customer?->city,
-        ])->filter()->implode('، ');
+        ])->map(fn ($part) => trim((string) $part))->filter()->implode('، ');
+
+        // Older profiles sometimes only captured work/org location.
+        if ($address === '') {
+            $address = collect([
+                $fin?->org_address,
+                $fin?->org_city,
+            ])->map(fn ($part) => trim((string) $part))->filter()->implode('، ');
+        }
 
         $workAddress = collect([
             $fin?->org_address,
             $fin?->org_city,
-        ])->filter()->implode('، ');
+        ])->map(fn ($part) => trim((string) $part))->filter()->implode('، ');
 
         $monthlyIncome = $application->monthly_income;
         if ($monthlyIncome === null && $fin?->annual_sales_1yr) {
             $monthlyIncome = ((float) $fin->annual_sales_1yr) / 12;
+        }
+
+        $refAddress = '';
+        if ($reference) {
+            if ($reference->same_address) {
+                $refAddress = $address;
+            }
         }
 
         $isSelfEmployed = filled($fin?->org_name);
@@ -65,7 +80,7 @@ class DriveApplicationFormData
             'prev_duration' => '',
             'ref_name' => (string) ($reference?->full_name ?? ''),
             'ref_relation' => (string) ($reference?->relation ?? ''),
-            'ref_address' => '',
+            'ref_address' => $refAddress,
             'ref_phone' => (string) ($reference?->mobile ?? ''),
             'employment' => $isSelfEmployed ? 'Self-Employed' : 'Salaried',
             'job_title' => $isSelfEmployed ? 'صاحب منشأة' : (string) ($customer?->occupation ?? ''),
