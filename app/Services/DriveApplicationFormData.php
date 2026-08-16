@@ -25,8 +25,10 @@ class DriveApplicationFormData
         $reference = $customer?->references?->first();
         $pdfSettings = $this->pdfSettings->values();
 
-        $nameEn = trim((string) ($ident?->name_en ?: $customer?->display_name));
+        // The printed name comes only from the identification step, Arabic first.
+        $nameEn = trim((string) ($ident?->name_en ?: ''));
         $nameAr = trim((string) ($ident?->name_ar ?: ''));
+        $fullName = $nameAr ?: $nameEn;
 
         $address = collect([
             $customer?->address,
@@ -91,7 +93,7 @@ class DriveApplicationFormData
             'title' => 'Mr',
             'name_en' => $nameEn,
             'name_ar' => $nameAr,
-            'name_combined' => collect([$nameEn, $nameAr])->filter()->implode('  |  '),
+            'name_combined' => $fullName,
             'dob' => $customer?->date_of_birth?->format('d/m/Y') ?? '',
             'gender' => $customer?->gender === Gender::Female ? 'F' : 'M',
             'nationality' => 'Egyptian',

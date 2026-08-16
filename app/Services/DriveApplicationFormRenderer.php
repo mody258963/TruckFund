@@ -49,7 +49,8 @@ class DriveApplicationFormRenderer
             'Other' => [71.9, 22.3],
         ]);
 
-        $this->text($pdf, 21.1, 27.8, (string) $data['name_combined'], 58, 9);
+        // Applicant name is the headline field on the form, so it prints largest.
+        $this->text($pdf, 21.1, 27.4, (string) $data['name_combined'], 58, 13);
         $this->text($pdf, 37.0, 31.8, (string) $data['dob'], 22);
         $this->markChoice($pdf, $data['gender'], [
             'M' => [20.9, 31.3],

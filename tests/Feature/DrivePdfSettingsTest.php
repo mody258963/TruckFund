@@ -90,6 +90,8 @@ class DrivePdfSettingsTest extends TestCase
         );
 
         $this->assertSame('Logo Side Name', $mapped['logo_name']);
+        // No identification step yet, so nothing falls back onto the name line.
+        $this->assertSame('', $mapped['name_combined']);
         $this->assertSame('Drive Loan 60m', $mapped['financial_product_name']);
         $this->assertSame('Alex Showroom', $mapped['showroom_agent']);
         $this->assertSame('Alex Showroom', $mapped['showroom']);

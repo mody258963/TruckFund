@@ -140,6 +140,8 @@ class FinanceApplicationPdfTest extends TestCase
 
         $loaded = $pdfService->loadForPdf($app->app_id);
         $mapped = app(DriveApplicationFormData::class)->fromApplication($loaded);
+        // The name line prints the identification step entry, Arabic first.
+        $this->assertSame('عميل تجريبي', $mapped['name_combined']);
         $this->assertStringContainsString('15 شارع 9', $mapped['home_address']);
         $this->assertStringContainsString('المعادي', $mapped['home_address']);
         $this->assertStringContainsString('القاهرة', $mapped['home_address']);
