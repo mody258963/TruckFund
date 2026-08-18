@@ -56,17 +56,20 @@ class DriveApplicationFormRenderer
         // A 14-digit national ID needs more room than the other short fields.
         $this->text($pdf, 37.0, 40.4, (string) $data['id_number'], 30);
 
+        // Mobile sits on the "Contact Details" section header bar, between the
+        // English and Arabic titles.
+        $this->text($pdf, 35.0, 44.2, (string) $data['phone_mobile'], 30, 10, 'C');
+
         // Sit just under the "Home Address" label on the dotted line.
-        $this->text($pdf, 21.1, 48.2, (string) $data['home_address'], 55, 9);
+        $this->text($pdf, 21.1, 48.2, (string) $data['home_address'], 55, 11);
         $this->text($pdf, 21.1, 57.3, (string) $data['home_duration'], 55);
-        $this->text($pdf, 21.1, 59.9, (string) $data['phone_mobile'], 55);
         // Email intentionally skipped.
-        $this->text($pdf, 21.1, 66.0, (string) $data['prev_address'], 55, 8.5);
+        $this->text($pdf, 21.1, 66.0, (string) $data['prev_address'], 55, 10.5);
         $this->text($pdf, 21.1, 74.0, (string) $data['prev_duration'], 55);
 
         $this->text($pdf, 21.1, 84.1, (string) $data['ref_name'], 55);
         $this->text($pdf, 21.1, 87.6, (string) $data['ref_relation'], 55);
-        $this->text($pdf, 21.1, 91.4, (string) $data['ref_address'], 55, 8);
+        $this->text($pdf, 21.1, 91.4, (string) $data['ref_address'], 55, 10);
         $this->text($pdf, 21.1, 95.5, (string) $data['ref_phone'], 55);
     }
 
@@ -82,7 +85,7 @@ class DriveApplicationFormRenderer
         $this->text($pdf, 27.1, 13.5, (string) $data['job_duration'], 42);
         $this->text($pdf, 27.1, 16.7, (string) $data['company_name'], 42, 8.5);
         $this->text($pdf, 27.1, 20.3, (string) $data['business_type'], 42, 8.5);
-        $this->text($pdf, 27.1, 25.2, (string) $data['work_address'], 42, 7.5);
+        $this->text($pdf, 27.1, 25.2, (string) $data['work_address'], 42, 10);
         $this->text($pdf, 27.1, 29.9, (string) $data['office_phone'], 42);
         // Work email intentionally skipped.
 
