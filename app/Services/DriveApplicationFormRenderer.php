@@ -60,8 +60,9 @@ class DriveApplicationFormRenderer
         // English and Arabic titles.
         $this->text($pdf, 35.0, 44.2, (string) $data['phone_mobile'], 30, 10, 'C');
 
-        // Sit just under the "Home Address" label on the dotted line.
-        $this->text($pdf, 21.1, 48.2, (string) $data['home_address'], 55, 11);
+        // Home address uses a tall box — wrap at a large size instead of shrinking
+        // long values down to a single tiny line.
+        $this->addressText($pdf, 21.1, 48.2, (string) $data['home_address'], 55, 5.8, 13, 10);
         $this->text($pdf, 21.1, 57.3, (string) $data['home_duration'], 55);
         // Email intentionally skipped.
         $this->text($pdf, 21.1, 66.0, (string) $data['prev_address'], 55, 10.5);
@@ -173,6 +174,82 @@ class DriveApplicationFormRenderer
         string $align = 'L',
     ): void {
         $this->text($pdf, $xPercent, $yPercent, $value, $maxWidthPercent, $fontSize, $align);
+    }
+
+    /**
+     * Multi-line address overlay: starts large and wraps inside the field box.
+     * Font only shrinks down to $minFontSize so long addresses stay readable.
+     */
+    protected function addressText(
+        Mpdf $pdf,
+        float $xPercent,
+        float $yPercent,
+        string $value,
+        float $maxWidthPercent,
+        float $maxHeightPercent,
+        float $fontSize = 12,
+        float $minFontSize = 10,
+        string $align = 'L',
+    ): void {
+        $value = trim($value);
+        if ($value === '') {
+            return;
+        }
+
+        $x = 210 * ($xPercent / 100);
+        $y = 297 * (($yPercent + self::Y_OFFSET) / 100);
+        $width = 210 * ($maxWidthPercent / 100);
+        $maxHeight = 297 * ($maxHeightPercent / 100);
+        $usableWidth = $width - self::BOLD_SMEAR - 2.0;
+
+        $fontSize *= self::TEXT_SCALE;
+        $minFontSize *= self::TEXT_SCALE;
+
+        while ($fontSize >= $minFontSize) {
+            $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
+            $lineHeight = max(4.2, $fontSize * 0.52);
+            $lines = $this->wrappedLineCount($pdf, $value, $usableWidth);
+
+            if ($lines * $lineHeight <= $maxHeight) {
+                break;
+            }
+
+            $fontSize -= 0.25;
+        }
+
+        $fontSize = max($minFontSize, $fontSize);
+        $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
+        $lineHeight = max(4.2, $fontSize * 0.52);
+        $pdf->SetTextColor(...self::TEXT_COLOR);
+
+        foreach ([0.0, self::BOLD_SMEAR] as $offset) {
+            $pdf->SetXY($x + $offset, $y);
+            $pdf->MultiCell($width, $lineHeight, $value, 0, $align);
+        }
+    }
+
+    protected function wrappedLineCount(Mpdf $pdf, string $text, float $width): int
+    {
+        $words = preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if ($words === []) {
+            return 1;
+        }
+
+        $lines = 1;
+        $currentWidth = 0.0;
+
+        foreach ($words as $word) {
+            $wordWidth = $pdf->GetStringWidth($word.' ');
+
+            if ($currentWidth + $wordWidth > $width && $currentWidth > 0) {
+                $lines++;
+                $currentWidth = $wordWidth;
+            } else {
+                $currentWidth += $wordWidth;
+            }
+        }
+
+        return $lines;
     }
 
     protected function text(
