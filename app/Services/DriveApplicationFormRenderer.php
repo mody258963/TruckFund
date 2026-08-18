@@ -220,6 +220,11 @@ class DriveApplicationFormRenderer
         $fontSize = max($minFontSize, $fontSize);
         $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
         $lineHeight = max(4.2, $fontSize * 0.52);
+
+        // Mask the grey scan inside the home-address box.
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->Rect($x, $y, $width, $maxHeight, 'F');
+
         $pdf->SetTextColor(...self::TEXT_COLOR);
 
         foreach ([0.0, self::BOLD_SMEAR] as $offset) {
