@@ -1,4 +1,4 @@
-# AutoFund
+# AshmawyFund
 
 Laravel 12 internal operations platform for truck financing: lead management, customer onboarding, finance applications, and catalog administration.
 
@@ -46,15 +46,15 @@ Seeding (`php artisan truckfund:seed-demo`) creates exactly these two accounts a
 
 | Email | Password | Role |
 |-------|----------|------|
-| aiman@autofund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
-| mohammed@autofund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
+| aiman@AshmawyFund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
+| mohammed@AshmawyFund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
 
 Override per environment before seeding:
 
 ```text
-TRUCKFUND_SEED_AIMAN_EMAIL=aiman@autofund.test
+TRUCKFUND_SEED_AIMAN_EMAIL=aiman@AshmawyFund.test
 TRUCKFUND_SEED_AIMAN_PASSWORD=
-TRUCKFUND_SEED_MOHAMMED_EMAIL=mohammed@autofund.test
+TRUCKFUND_SEED_MOHAMMED_EMAIL=mohammed@AshmawyFund.test
 TRUCKFUND_SEED_MOHAMMED_PASSWORD=
 ```
 
@@ -116,7 +116,7 @@ Common mistakes:
 **Full Dokploy Environment (copy and fill values):**
 
 ```
-APP_NAME=AutoFund
+APP_NAME=AshmawyFund
 APP_URL=https://your-domain.com
 APP_ENV=production
 APP_DEBUG=false
@@ -168,8 +168,8 @@ Mount a volume on `/var/www/html/storage/app` so uploaded documents survive rede
 ### Local Docker test
 
 ```bash
-docker build -t autofund .
-docker run -p 8080:80 --env-file .env -e APP_KEY=base64:xxx autofund
+docker build -t AshmawyFund .
+docker run -p 8080:80 --env-file .env -e APP_KEY=base64:xxx AshmawyFund
 ```
 
 Or: `docker compose up --build` (see `docker-compose.yml`).

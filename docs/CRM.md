@@ -1,4 +1,4 @@
-# AutoFund CRM hierarchy
+# AshmawyFund CRM hierarchy
 
 ## Roles
 
@@ -45,7 +45,7 @@ External referrers without login. Locked after create; only Admin can edit.
 
 | Email | Password | Role |
 |-------|----------|------|
-| aiman@autofund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
-| mohammed@autofund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
+| aiman@AshmawyFund.test | `Ay#7mNq4Zt$Rv2Kx` | Admin |
+| mohammed@AshmawyFund.test | `Mh$9dRk6Xw#Pb3Tq` | Admin |
 
 Passwords are read from `config/truckfund.php` and can be overridden with `TRUCKFUND_SEED_AIMAN_PASSWORD` / `TRUCKFUND_SEED_MOHAMMED_PASSWORD`. The seeder creates no merchants, financial products, freelancers or leads — only these users and the truck catalog.

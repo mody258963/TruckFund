@@ -25,7 +25,7 @@ class DrivePdfSettings
 
         return [
             'logo_name' => (string) ($stored[self::LOGO_NAME]
-                ?? config('truckfund.drive_form_logo_name', 'sara gamal')),
+                ?? config('truckfund.drive_form_logo_name', 'AshmawyFund')),
             'showroom_agent' => (string) ($stored[self::SHOWROOM_AGENT]
                 ?? config('truckfund.drive_form_showroom_agent', '')),
             'sales_officer' => (string) ($stored[self::SALES_OFFICER]

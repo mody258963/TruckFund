@@ -13,7 +13,7 @@ return [
     'storage_retention_months' => (int) env('TRUCKFUND_STORAGE_RETENTION_MONTHS', 6),
     'drive_form_logo_name' => env(
         'TRUCKFUND_DRIVE_LOGO_NAME',
-        env('TRUCKFUND_DRIVE_SHOWROOM', 'sara gamal'),
+        env('TRUCKFUND_DRIVE_SHOWROOM', 'AshmawyFund'),
     ),
     'drive_form_showroom_agent' => env('TRUCKFUND_DRIVE_SHOWROOM_AGENT', ''),
     'drive_form_sales_officer' => env('TRUCKFUND_DRIVE_SALES_OFFICER', ''),
@@ -23,12 +23,12 @@ return [
     'seed_admins' => [
         [
             'full_name' => 'Aiman',
-            'email' => env('TRUCKFUND_SEED_AIMAN_EMAIL', 'aiman@autofund.test'),
+            'email' => env('TRUCKFUND_SEED_AIMAN_EMAIL', 'aiman@ashmawyfund.test'),
             'password' => env('TRUCKFUND_SEED_AIMAN_PASSWORD', 'Ay#7mNq4Zt$Rv2Kx'),
         ],
         [
             'full_name' => 'Mohammed',
-            'email' => env('TRUCKFUND_SEED_MOHAMMED_EMAIL', 'mohammed@autofund.test'),
+            'email' => env('TRUCKFUND_SEED_MOHAMMED_EMAIL', 'mohammed@ashmawyfund.test'),
             'password' => env('TRUCKFUND_SEED_MOHAMMED_PASSWORD', 'Mh$9dRk6Xw#Pb3Tq'),
         ],
     ],

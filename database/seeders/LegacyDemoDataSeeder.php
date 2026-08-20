@@ -38,9 +38,9 @@ class LegacyDemoDataSeeder extends Seeder
             'sales@TestFund.test',
             'sales2@TestFund.test',
             'finance@TestFund.test',
-            'admin@autofund.test',
-            'sales@autofund.test',
-            'finance@autofund.test',
+            'admin@ashmawyfund.test',
+            'sales@ashmawyfund.test',
+            'finance@ashmawyfund.test',
         ])->delete();
     }
 }

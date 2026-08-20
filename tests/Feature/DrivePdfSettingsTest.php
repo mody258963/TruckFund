@@ -24,7 +24,7 @@ class DrivePdfSettingsTest extends TestCase
         $this->actingAs($admin);
 
         Livewire::test(Settings::class)
-            ->assertSet('drivePdf.logo_name', 'sara gamal')
+            ->assertSet('drivePdf.logo_name', 'AshmawyFund')
             ->set('drivePdf.logo_name', 'Sara Gamal Updated')
             ->set('drivePdf.showroom_agent', 'Cairo Showroom Agent')
             ->set('drivePdf.sales_officer', 'Mona Sales Officer')

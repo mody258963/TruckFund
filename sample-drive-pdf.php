@@ -11,7 +11,7 @@ $renderer = app(DriveApplicationFormRenderer::class);
 $mapper->ensureTemplatesExist();
 
 $data = [
-    'logo_name' => 'sara gamal',
+    'logo_name' => 'AshmawyFund',
     'financial_product_name' => 'Drive Loan 60m',
     'showroom_agent' => 'Cairo Showroom',
     'showroom' => 'Cairo Showroom',

@@ -69,8 +69,8 @@ RUN npm run build
 # ------------------------------------------------------------------------------
 FROM php:8.3-fpm-alpine AS production
 
-LABEL org.opencontainers.image.title="AutoFund"
-LABEL org.opencontainers.image.description="Laravel AutoFund application"
+LABEL org.opencontainers.image.title="AshmawyFund"
+LABEL org.opencontainers.image.description="Laravel AshmawyFund application"
 
 RUN apk add --no-cache \
     nginx \
