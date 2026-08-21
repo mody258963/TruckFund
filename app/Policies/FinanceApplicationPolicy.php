@@ -10,7 +10,11 @@ class FinanceApplicationPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, [UserRole::Admin, UserRole::FinanceOfficer, UserRole::MerchantAgent], true);
+        return in_array($user->role, [
+            UserRole::Admin,
+            UserRole::FinanceOfficer,
+            UserRole::MerchantAgent,
+        ], true);
     }
 
     public function view(User $user, FinanceApplication $application): bool
@@ -31,5 +35,15 @@ class FinanceApplicationPolicy
     public function decide(User $user, FinanceApplication $application): bool
     {
         return in_array($user->role, [UserRole::Admin, UserRole::FinanceOfficer], true);
+    }
+
+    /** External funder: set review status + feedback only. */
+    public function reviewFunder(User $user, FinanceApplication $application): bool
+    {
+        return in_array($user->role, [
+            UserRole::Admin,
+            UserRole::FinanceOfficer,
+            UserRole::MerchantAgent,
+        ], true);
     }
 }

@@ -79,7 +79,7 @@ class UsersIndex extends Component
             ->get();
 
         $creatableRoles = match ($viewer->role) {
-            UserRole::Admin => [UserRole::Manager, UserRole::TeamLeader, UserRole::SalesAgent, UserRole::FinanceOfficer],
+            UserRole::Admin => [UserRole::Manager, UserRole::TeamLeader, UserRole::SalesAgent, UserRole::FinanceOfficer, UserRole::MerchantAgent],
             UserRole::Manager => [UserRole::TeamLeader, UserRole::SalesAgent],
             UserRole::TeamLeader => [UserRole::SalesAgent],
             default => [],

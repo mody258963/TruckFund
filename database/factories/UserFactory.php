@@ -42,4 +42,9 @@ class UserFactory extends Factory
     {
         return $this->state(fn () => ['role' => UserRole::FinanceOfficer]);
     }
+
+    public function merchantAgent(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::MerchantAgent]);
+    }
 }

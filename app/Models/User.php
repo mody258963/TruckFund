@@ -76,4 +76,9 @@ class User extends Authenticatable
     {
         return $this->role === UserRole::SalesAgent;
     }
+
+    public function isMerchantAgent(): bool
+    {
+        return $this->role === UserRole::MerchantAgent;
+    }
 }

@@ -45,6 +45,11 @@ return [
         'DocsUploaded' => 'Documents Uploaded',
         'Completed' => 'Completed',
     ],
+    'funder_review_status' => [
+        'NeedsAction' => 'Needs action',
+        'Rejected' => 'Rejected',
+        'Accepted' => 'Accepted',
+    ],
     'doc_type' => [
         'NationalId' => 'National ID',
         'IncomeProof' => 'Income Proof',

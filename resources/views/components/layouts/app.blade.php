@@ -1,6 +1,8 @@
 @php
     $locale = app()->getLocale();
     $rtl = $locale === 'ar';
+    $user = auth()->user();
+    $isMerchantAgent = $user?->isMerchantAgent();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $locale) }}" dir="{{ $rtl ? 'rtl' : 'ltr' }}" class="h-full">
@@ -21,13 +23,22 @@
                 <span class="text-lg font-semibold text-teal-400">{{ __('app.name') }}</span>
             </div>
             <nav class="space-y-1 p-4 text-sm">
+                @unless($isMerchantAgent)
                 <a href="{{ route('dashboard') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('dashboard') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.dashboard') }}</a>
+                @can('viewAny', App\Models\Lead::class)
                 <a href="{{ route('leads.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('leads.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.leads') }}</a>
+                @endcan
                 @can('viewAny', App\Models\Freelancer::class)
                 <a href="{{ route('freelancers.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('freelancers.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.freelancers') }}</a>
                 @endcan
+                @endunless
+                @can('viewAny', App\Models\Customer::class)
                 <a href="{{ route('customers.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('customers.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.customers') }}</a>
+                @endcan
+                @can('viewAny', App\Models\FinanceApplication::class)
                 <a href="{{ route('finance.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('finance.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.finance') }}</a>
+                @endcan
+                @unless($isMerchantAgent)
                 <p class="px-3 pt-4 text-xs uppercase tracking-wider text-zinc-500">{{ __('nav.catalog') }}</p>
                 <a href="{{ route('admin.catalog', 'merchants') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request('type') === 'merchants' ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.merchants') }}</a>
                 <a href="{{ route('admin.catalog', 'financial-products') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request('type') === 'financial-products' ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.financial_products') }}</a>
@@ -36,10 +47,11 @@
                 @can('viewAny', App\Models\User::class)
                 <a href="{{ route('users.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('users.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.users') }}</a>
                 @endcan
-                @if(auth()->user()?->isAdmin())
+                @if($user?->isAdmin())
                 <a href="{{ route('admin.settings') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('admin.settings') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.settings') }}</a>
                 <a href="{{ route('audit.index') }}" class="block rounded-lg px-3 py-2 hover:bg-zinc-800 {{ request()->routeIs('audit.*') ? 'bg-zinc-800 text-teal-400' : '' }}">{{ __('nav.audit') }}</a>
                 @endif
+                @endunless
             </nav>
         </aside>
         <div class="flex flex-1 flex-col">

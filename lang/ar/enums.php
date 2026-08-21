@@ -45,6 +45,11 @@ return [
         'DocsUploaded' => 'تم رفع المستندات',
         'Completed' => 'مكتمل',
     ],
+    'funder_review_status' => [
+        'NeedsAction' => 'يحتاج إجراء',
+        'Rejected' => 'مرفوض',
+        'Accepted' => 'مقبول',
+    ],
     'doc_type' => [
         'NationalId' => 'بطاقة الهوية',
         'IncomeProof' => 'إثبات دخل',

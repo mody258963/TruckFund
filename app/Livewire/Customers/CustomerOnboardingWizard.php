@@ -39,6 +39,7 @@ class CustomerOnboardingWizard extends Component
 
     public function mount(Customer $customer, CustomerRepositoryInterface $repo): void
     {
+        $this->authorize('update', $customer);
         $this->customer = $repo->findWithRelations($customer->customer_id) ?? $customer;
         $this->step = CustomerOnboardingService::normalizeStep((int) $this->customer->onboarding_step);
         $fin = $this->customer->financialData;

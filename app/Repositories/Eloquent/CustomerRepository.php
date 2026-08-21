@@ -29,6 +29,19 @@ class CustomerRepository extends EloquentRepository implements CustomerRepositor
             ->find($id);
     }
 
+    public function paginate(int $perPage = 15, array $filters = []): LengthAwarePaginator
+    {
+        return $this->applyFilters($this->query(), $filters)
+            ->withExists([
+                'financeApplications as has_reentry_due' => fn ($q) => $q
+                    ->whereNotNull('reentry_due_at')
+                    ->whereDate('reentry_due_at', '<=', now()->toDateString()),
+            ])
+            ->orderByDesc('has_reentry_due')
+            ->latest()
+            ->paginate($perPage);
+    }
+
     protected function applyFilters(Builder $query, array $filters): Builder
     {
         if (! empty($filters['search'])) {
@@ -40,6 +53,11 @@ class CustomerRepository extends EloquentRepository implements CustomerRepositor
         }
         if (isset($filters['profile_completed'])) {
             $query->where('profile_completed', (bool) $filters['profile_completed']);
+        }
+        if (! empty($filters['reentry_due'])) {
+            $query->whereHas('financeApplications', fn ($q) => $q
+                ->whereNotNull('reentry_due_at')
+                ->whereDate('reentry_due_at', '<=', now()->toDateString()));
         }
 
         return $query;

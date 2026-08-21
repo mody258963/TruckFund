@@ -85,6 +85,10 @@ class UserManagementService
             throw ValidationException::withMessages(['reports_to' => __('crm.users.reports_to_required')]);
         }
 
+        if (in_array($role, [UserRole::FinanceOfficer, UserRole::MerchantAgent], true)) {
+            return;
+        }
+
         if ($reportsToId && ! $this->hierarchy->canViewUser($creator, User::query()->findOrFail($reportsToId))) {
             if (! $creator->isAdmin()) {
                 throw ValidationException::withMessages(['reports_to' => __('crm.users.invalid_manager')]);

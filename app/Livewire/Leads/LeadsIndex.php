@@ -50,6 +50,11 @@ class LeadsIndex extends Component
 
     public ?string $bulkAssignUserId = null;
 
+    public function mount(): void
+    {
+        $this->authorize('viewAny', Lead::class);
+    }
+
     public function create(LeadService $service): void
     {
         $this->authorize('create', Lead::class);

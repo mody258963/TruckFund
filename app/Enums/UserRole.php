@@ -40,4 +40,20 @@ enum UserRole: int
     {
         return in_array($this, [self::Admin, self::Manager, self::TeamLeader], true);
     }
+
+    /** External funder: customers + finance apps only. */
+    public function isMerchantAgent(): bool
+    {
+        return $this === self::MerchantAgent;
+    }
+
+    public function canAccessCatalog(): bool
+    {
+        return ! $this->isMerchantAgent();
+    }
+
+    public function canAccessDashboard(): bool
+    {
+        return ! $this->isMerchantAgent();
+    }
 }

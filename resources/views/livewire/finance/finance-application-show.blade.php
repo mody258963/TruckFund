@@ -25,6 +25,14 @@
                 </flux:button>
             @endif
             <flux:badge color="{{ $status->color() }}" size="lg">{{ $status->label() }}</flux:badge>
+            @if($application->funder_status)
+                <flux:badge color="{{ $application->funder_status->color() }}" size="lg">{{ $application->funder_status->label() }}</flux:badge>
+            @endif
+            @if($application->isReentryDue())
+                <flux:badge color="red" size="lg">{{ __('finance.reentry_overdue') }}</flux:badge>
+            @elseif($application->isReentryUpcoming())
+                <flux:badge color="amber" size="lg">{{ __('finance.reentry_soon') }}</flux:badge>
+            @endif
         </div>
     </div>
 
@@ -102,6 +110,41 @@
 
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
+            @if($canReviewFunder)
+            <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-900 dark:bg-indigo-950/30">
+                <flux:heading size="lg" class="mb-2">{{ __('finance.funder_section') }}</flux:heading>
+                <p class="mb-4 text-sm text-zinc-600 dark:text-zinc-400">{{ __('finance.funder_hint') }}</p>
+                <form wire:submit="saveFunderReview" class="space-y-4">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('finance.funder_status') }}</label>
+                        <select
+                            wire:model="funderStatus"
+                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800"
+                            required
+                        >
+                            <option value="">{{ __('common.select') }}</option>
+                            @foreach($funderStatuses as $fStatus)
+                                <option value="{{ $fStatus->value }}">{{ $fStatus->label() }}</option>
+                            @endforeach
+                        </select>
+                        @error('funderStatus')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <flux:textarea wire:model="funderFeedback" label="{{ __('finance.funder_feedback') }}" rows="4" />
+                    @error('funderFeedback')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                    @if($application->funder_reviewed_at)
+                        <p class="text-xs text-zinc-500">
+                            {{ __('finance.funder_last_review', [
+                                'name' => $application->funderReviewer?->full_name ?? '—',
+                                'date' => $application->funder_reviewed_at->format('Y-m-d H:i'),
+                            ]) }}
+                        </p>
+                    @endif
+                    <flux:button type="submit" variant="primary">{{ __('finance.funder_save') }}</flux:button>
+                </form>
+            </div>
+            @endif
+
+            @if($canManageWorkflow)
             @if($isDraft)
             <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <div class="mb-4 flex items-center justify-between">
@@ -279,6 +322,7 @@
                 <flux:button wire:click="complete" variant="primary" wire:confirm="{{ __('finance.complete_confirm') }}">{{ __('finance.mark_completed') }}</flux:button>
             </div>
             @endif
+            @endif
         </div>
 
         <div class="space-y-6">
@@ -308,6 +352,15 @@
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.monthly_income') }}</dt><dd>{{ $application->monthly_income !== null ? number_format((float) $application->monthly_income, 2) : '—' }}</dd></div>
                     @if($application->booking_effective_date)
                     <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.booking_date') }}</dt><dd>{{ $application->booking_effective_date->format('Y-m-d') }}</dd></div>
+                    @endif
+                    @if($application->reentry_due_at)
+                    <div class="flex justify-between gap-2"><dt class="text-zinc-500">{{ __('finance.reentry_due_at') }}</dt><dd>{{ $application->reentry_due_at->format('Y-m-d') }}</dd></div>
+                    @endif
+                    @if($application->funder_feedback)
+                    <div class="pt-2">
+                        <dt class="mb-1 text-zinc-500">{{ __('finance.funder_feedback') }}</dt>
+                        <dd class="whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">{{ $application->funder_feedback }}</dd>
+                    </div>
                     @endif
                 </dl>
             </div>

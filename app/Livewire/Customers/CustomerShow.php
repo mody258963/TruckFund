@@ -18,6 +18,7 @@ class CustomerShow extends Component
 
     public function mount(Customer $customer, CustomerRepositoryInterface $repo): void
     {
+        $this->authorize('view', $customer);
         $this->customer = $repo->findWithRelations($customer->customer_id)
             ?? abort(404);
     }

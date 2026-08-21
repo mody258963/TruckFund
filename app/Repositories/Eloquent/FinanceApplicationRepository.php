@@ -30,6 +30,7 @@ class FinanceApplicationRepository extends EloquentRepository implements Finance
                 'financialProduct',
                 'applicationDocuments',
                 'communicationLogs',
+                'funderReviewer',
             ])
             ->find($id);
     }
@@ -38,6 +39,17 @@ class FinanceApplicationRepository extends EloquentRepository implements Finance
     {
         if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
+        }
+        if (array_key_exists('funder_status', $filters) && $filters['funder_status'] !== '' && $filters['funder_status'] !== null) {
+            if ($filters['funder_status'] === 'none') {
+                $query->whereNull('funder_status');
+            } else {
+                $query->where('funder_status', $filters['funder_status']);
+            }
+        }
+        if (! empty($filters['reentry_due'])) {
+            $query->whereNotNull('reentry_due_at')
+                ->whereDate('reentry_due_at', '<=', now()->toDateString());
         }
         if (! empty($filters['search'])) {
             $s = '%'.$filters['search'].'%';
@@ -49,6 +61,24 @@ class FinanceApplicationRepository extends EloquentRepository implements Finance
         }
 
         return $query;
+    }
+
+    public function paginate(int $perPage = 15, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->applyFilters(
+            $this->query()->with(['customer', 'funderReviewer']),
+            $filters,
+        );
+
+        return $query
+            ->orderByRaw('CASE WHEN funder_status = ? THEN 0 WHEN funder_status IS NULL THEN 1 ELSE 2 END', [
+                \App\Enums\FunderReviewStatus::NeedsAction->value,
+            ])
+            ->orderByRaw('CASE WHEN reentry_due_at IS NOT NULL AND reentry_due_at <= ? THEN 0 ELSE 1 END', [
+                now()->toDateString(),
+            ])
+            ->latest()
+            ->paginate($perPage);
     }
 
     public function generateAppNumber(): string

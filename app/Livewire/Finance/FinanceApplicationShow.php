@@ -5,6 +5,7 @@ namespace App\Livewire\Finance;
 use App\Contracts\Repositories\FinanceApplicationRepositoryInterface;
 use App\Enums\ApplicationStatus;
 use App\Enums\DocType;
+use App\Enums\FunderReviewStatus;
 use App\Models\AutoProduct;
 use App\Models\FinanceApplication;
 use App\Models\FinancialProduct;
@@ -44,6 +45,10 @@ class FinanceApplicationShow extends Component
 
     public ?string $bookingDate = null;
 
+    public ?int $funderStatus = null;
+
+    public string $funderFeedback = '';
+
     public function mount(FinanceApplication $application, FinanceApplicationRepositoryInterface $repo): void
     {
         $this->authorize('view', $application);
@@ -57,6 +62,8 @@ class FinanceApplicationShow extends Component
             ->values()
             ->all();
         $this->bookingDate = $this->application->booking_effective_date?->format('Y-m-d');
+        $this->funderStatus = $this->application->funder_status?->value;
+        $this->funderFeedback = (string) ($this->application->funder_feedback ?? '');
     }
 
     public function updatedSelectedModelYear(): void
@@ -214,12 +221,14 @@ class FinanceApplicationShow extends Component
 
     public function confirmBooking(FinanceApplicationService $service): void
     {
+        $this->authorize('update', $this->application);
         $this->validate(['bookingDate' => 'required|date']);
         $this->application = $service->confirmBooking($this->application, $this->bookingDate);
     }
 
     public function uploadDoc(FinanceApplicationService $service): void
     {
+        $this->authorize('update', $this->application);
         $maxKb = config('truckfund.document_max_kb', 10240);
         $this->validate([
             'acceptanceDocs' => 'required|array|min:1|max:20',
@@ -233,7 +242,26 @@ class FinanceApplicationShow extends Component
 
     public function complete(FinanceApplicationService $service): void
     {
+        $this->authorize('update', $this->application);
         $this->application = $service->complete($this->application);
+    }
+
+    public function saveFunderReview(FinanceApplicationService $service): void
+    {
+        $this->authorize('reviewFunder', $this->application);
+        $this->validate([
+            'funderStatus' => ['required', Rule::enum(FunderReviewStatus::class)],
+            'funderFeedback' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $this->application = $service->saveFunderReview(
+            $this->application,
+            FunderReviewStatus::from((int) $this->funderStatus),
+            trim($this->funderFeedback),
+            auth()->user(),
+        );
+        $this->application->load('funderReviewer');
+        $this->dispatch('notify', message: __('finance.funder_saved'));
     }
 
     /** @return Collection<int, AutoProduct> */
@@ -295,6 +323,9 @@ class FinanceApplicationShow extends Component
             'financialProducts' => FinancialProduct::query()->where('is_active', true)->get(),
             'canDownloadPdf' => $pdfService->canGenerate($this->application),
             'maxVehicles' => self::MAX_VEHICLES,
+            'funderStatuses' => FunderReviewStatus::cases(),
+            'canManageWorkflow' => auth()->user()->can('update', $this->application),
+            'canReviewFunder' => auth()->user()->can('reviewFunder', $this->application),
         ]);
     }
 }

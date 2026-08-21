@@ -45,6 +45,8 @@ class CatalogManager extends Component
 
     public function mount(string $type): void
     {
+        abort_unless(auth()->user()?->role->canAccessCatalog(), 403);
+
         [$this->modelClass, $this->titleKey, $this->routeName, $this->fields] = match ($type) {
             'merchants' => [Merchant::class, 'nav.merchants', 'merchants', ['name', 'type', 'contact_email']],
             'financial-products' => [FinancialProduct::class, 'nav.financial_products', 'financial-products', ['name', 'product_code', 'percentage', 'description']],

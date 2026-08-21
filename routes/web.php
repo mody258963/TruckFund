@@ -34,7 +34,13 @@ Route::post('/logout', function () {
 })->middleware('auth')->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', function () {
+        if (auth()->user()?->isMerchantAgent()) {
+            return new \Illuminate\Http\RedirectResponse(route('finance.index'));
+        }
+
+        return app(Dashboard::class)();
+    })->name('dashboard');
 
     Route::get('/leads', LeadsIndex::class)->name('leads.index');
     Route::get('/leads/{lead}', LeadShow::class)->name('leads.show');

@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Contracts\Repositories\FinanceApplicationRepositoryInterface;
 use App\Enums\ApplicationStatus;
 use App\Enums\DocType;
+use App\Enums\FunderReviewStatus;
 use App\Jobs\RunCreditChecksJob;
 use App\Models\ApplicationDocument;
 use App\Models\FinanceApplication;
+use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +93,7 @@ class FinanceApplicationService
         return $this->applications->update($app, [
             'booking_effective_date' => $date,
             'status' => ApplicationStatus::BookingConfirmed,
+            'reentry_due_at' => $this->reentryDueDate($date),
         ]);
     }
 
@@ -133,6 +136,31 @@ class FinanceApplicationService
 
     public function complete(FinanceApplication $app): FinanceApplication
     {
-        return $this->applications->update($app, ['status' => ApplicationStatus::Completed]);
+        $payload = ['status' => ApplicationStatus::Completed];
+
+        if ($app->reentry_due_at === null) {
+            $payload['reentry_due_at'] = $this->reentryDueDate(now()->toDateString());
+        }
+
+        return $this->applications->update($app, $payload);
+    }
+
+    public function saveFunderReview(
+        FinanceApplication $app,
+        FunderReviewStatus $status,
+        string $feedback,
+        User $reviewer,
+    ): FinanceApplication {
+        return $this->applications->update($app, [
+            'funder_status' => $status,
+            'funder_feedback' => $feedback,
+            'funder_reviewed_at' => now(),
+            'funder_reviewed_by' => $reviewer->user_id,
+        ]);
+    }
+
+    protected function reentryDueDate(string $fromDate): string
+    {
+        return \Carbon\Carbon::parse($fromDate)->addMonths(2)->toDateString();
     }
 }
