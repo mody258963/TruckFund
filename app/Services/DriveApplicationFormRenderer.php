@@ -86,7 +86,9 @@ class DriveApplicationFormRenderer
         $this->text($pdf, 27.1, 13.5, (string) $data['job_duration'], 42);
         $this->text($pdf, 27.1, 16.7, (string) $data['company_name'], 42, 8.5);
         $this->text($pdf, 27.1, 20.3, (string) $data['business_type'], 42, 8.5);
-        $this->text($pdf, 27.1, 25.2, (string) $data['work_address'], 42, 10);
+        // Work address is a taller row (two-line street label) — wrap at a large
+        // size like home address instead of shrinking a long value to one line.
+        $this->addressText($pdf, 27.1, 23.2, (string) $data['work_address'], 42, 5.8, 13, 10);
         $this->text($pdf, 27.1, 29.9, (string) $data['office_phone'], 42);
         // Work email intentionally skipped.
 
@@ -221,7 +223,7 @@ class DriveApplicationFormRenderer
         $pdf->SetFont(self::TEXT_FONT, 'B', $fontSize);
         $lineHeight = max(4.2, $fontSize * 0.52);
 
-        // Mask the grey scan inside the home-address box.
+        // Mask the grey scan inside the address box.
         $pdf->SetFillColor(255, 255, 255);
         $pdf->Rect($x, $y, $width, $maxHeight, 'F');
 
