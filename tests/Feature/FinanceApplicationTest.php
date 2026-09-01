@@ -100,6 +100,59 @@ class FinanceApplicationTest extends TestCase
         $this->assertNull($app->fresh()->financial_merchant_id);
     }
 
+    public function test_loan_only_application_can_be_saved_and_submitted_without_a_vehicle(): void
+    {
+        $user = User::factory()->financeOfficer()->create();
+        $this->actingAs($user);
+
+        $customer = Customer::query()->create([
+            'display_name' => 'Loan Only Customer',
+            'mobile_number' => '01009998890',
+        ]);
+        $merchant = Merchant::query()->create([
+            'name' => 'Test Bank',
+            'type' => 1,
+            'is_active' => true,
+        ]);
+        $financialProduct = FinancialProduct::query()->create([
+            'name' => 'Personal Loan',
+            'product_code' => 'LOAN-ONLY-01',
+            'percentage' => 18.5,
+            'is_active' => true,
+        ]);
+
+        $app = app(FinanceApplicationService::class)->createDraft([
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'down_payment' => 0,
+            'total_loan_amount' => 0,
+            'total_truck_price' => 0,
+        ]);
+
+        Livewire::test(FinanceApplicationShow::class, ['application' => $app])
+            ->set('form.financial_merchant_id', $merchant->merchant_id)
+            ->set('selectedVehicleIds', [])
+            ->call('nextDraftStep')
+            ->assertHasNoErrors()
+            ->assertSet('wizardStep', 2)
+            ->set('form.financial_product_id', $financialProduct->product_id)
+            ->set('form.total_truck_price', 0)
+            ->set('form.down_payment', 0)
+            ->set('form.total_loan_amount', 250000)
+            ->call('nextDraftStep')
+            ->assertHasNoErrors()
+            ->call('saveDraft')
+            ->assertHasNoErrors()
+            ->call('submitForReview')
+            ->assertHasNoErrors();
+
+        $fresh = $app->fresh()->load('autoProducts');
+        $this->assertNull($fresh->auto_product_id);
+        $this->assertCount(0, $fresh->autoProducts);
+        $this->assertEquals(250000, (float) $fresh->total_loan_amount);
+        $this->assertEquals(ApplicationStatus::UnderReview, $fresh->status);
+    }
+
     public function test_vehicles_are_chosen_year_then_model_then_name(): void
     {
         $user = User::factory()->financeOfficer()->create();

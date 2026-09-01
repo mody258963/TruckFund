@@ -171,6 +171,47 @@ class FinanceApplicationPdfTest extends TestCase
         $this->assertGreaterThan(200000, strlen($response->getContent()));
     }
 
+    public function test_pdf_can_generate_for_loan_only_application_without_a_vehicle(): void
+    {
+        $user = User::factory()->financeOfficer()->create();
+        $merchant = Merchant::query()->create([
+            'name' => 'Test Bank',
+            'type' => 1,
+            'is_active' => true,
+        ]);
+        $financialProduct = FinancialProduct::query()->create([
+            'name' => 'Personal Loan',
+            'product_code' => 'PDF-LOAN-ONLY-01',
+            'percentage' => 18.5,
+            'is_active' => true,
+        ]);
+        $customer = Customer::query()->create([
+            'display_name' => 'Loan Only PDF Customer',
+            'mobile_number' => '01001112235',
+        ]);
+
+        $app = app(FinanceApplicationService::class)->createDraft([
+            'customer_id' => $customer->customer_id,
+            'user_id' => $user->user_id,
+            'financial_merchant_id' => $merchant->merchant_id,
+            'financial_product_id' => $financialProduct->product_id,
+            'down_payment' => 0,
+            'total_loan_amount' => 250000,
+            'total_truck_price' => 0,
+        ]);
+
+        $pdfService = app(FinanceApplicationPdfService::class);
+        $this->assertTrue($pdfService->canGenerate($app));
+
+        $mapped = app(DriveApplicationFormData::class)->fromApplication($app->fresh());
+        $this->assertSame([], $mapped['vehicles']);
+
+        $response = $this->actingAs($user)->get(route('finance.pdf', $app));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+    }
+
     public function test_legacy_document_path_prefixes_still_resolve(): void
     {
         Storage::fake('documents');

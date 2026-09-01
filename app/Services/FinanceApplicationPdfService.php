@@ -21,11 +21,7 @@ class FinanceApplicationPdfService
 
     public function canGenerate(FinanceApplication $application): bool
     {
-        $hasVehicle = $application->selectedVehicles()->isNotEmpty()
-            || filled($application->auto_product_id);
-
         return $application->financial_merchant_id
-            && $hasVehicle
             && $application->financial_product_id
             && $application->total_truck_price !== null
             && $application->down_payment !== null

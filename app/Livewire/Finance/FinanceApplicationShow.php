@@ -126,8 +126,7 @@ class FinanceApplicationShow extends Component
         return match ($this->wizardStep) {
             1 => [
                 'form.financial_merchant_id' => $this->merchantRules(),
-                'selectedVehicleIds' => ['required', 'array', 'min:1', 'max:'.self::MAX_VEHICLES],
-                'selectedVehicleIds.*' => $this->selectedVehicleIdRules(),
+                ...$this->selectedVehiclesRules(),
             ],
             2 => [
                 'form.financial_product_id' => $this->financialProductRules(),
@@ -145,8 +144,7 @@ class FinanceApplicationShow extends Component
     {
         return [
             'form.financial_merchant_id' => $this->merchantRules(),
-            'selectedVehicleIds' => ['required', 'array', 'min:1', 'max:'.self::MAX_VEHICLES],
-            'selectedVehicleIds.*' => $this->selectedVehicleIdRules(),
+            ...$this->selectedVehiclesRules(),
             'form.financial_product_id' => $this->financialProductRules(),
             'form.total_truck_price' => 'required|numeric|min:0',
             'form.down_payment' => 'required|numeric|min:0',
@@ -171,6 +169,15 @@ class FinanceApplicationShow extends Component
                 ->where('model_year', $this->selectedModelYear)
                 ->where('model', $this->selectedModel)
                 ->where('is_active', true),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    protected function selectedVehiclesRules(): array
+    {
+        return [
+            'selectedVehicleIds' => ['array', 'max:'.self::MAX_VEHICLES],
+            'selectedVehicleIds.*' => $this->selectedVehicleIdRules(),
         ];
     }
 

@@ -11,9 +11,9 @@ return [
     'vehicle_model' => 'Car / truck model',
     'vehicle_name' => 'Car / truck name',
     'vehicles_section' => 'Vehicles on this deal',
-    'vehicles_hint' => 'Add up to :max vehicles (for example a truck head and a trailer). Choose year, then model, then name.',
+    'vehicles_hint' => 'Optional — skip this when the customer is taking a loan without a vehicle. Otherwise add up to :max vehicles (for example a truck head and a trailer). Choose year, then model, then name.',
     'add_vehicle' => 'Add vehicle',
-    'no_vehicles_selected' => 'No vehicles selected yet.',
+    'no_vehicles_selected' => 'No vehicles selected — that is fine for a loan-only application.',
     'vehicle_already_added' => 'This vehicle is already on the application.',
     'vehicle_limit' => 'You can add at most :max vehicles.',
     'product' => 'Financial product',
@@ -59,7 +59,7 @@ return [
         'done_desc' => 'This financing application is fully completed. No further action is required.',
         1 => [
             'title' => 'Application details',
-            'desc' => 'Select the financing merchant, truck, financial product, and loan amounts. Save as draft or continue through the 3 sub-steps.',
+            'desc' => 'Select the financing merchant, financial product, and loan amounts. Add a truck only when this deal includes a vehicle.',
             'actor' => 'Sales / Finance officer',
         ],
         2 => [
@@ -90,8 +90,8 @@ return [
     ],
     'create_for_customer' => 'New finance application',
     'download_pdf' => 'Download application package (PDF)',
-    'pdf_hint' => 'Always available once merchant, vehicle, product, and loan amounts are saved. Includes the filled DRIVE form and all uploaded images/documents.',
-    'pdf_incomplete' => 'Complete merchant, truck, product, and loan amounts before generating the PDF.',
+    'pdf_hint' => 'Always available once merchant, product, and loan amounts are saved. Includes the filled DRIVE form and all uploaded images/documents.',
+    'pdf_incomplete' => 'Complete merchant, product, and loan amounts before generating the PDF.',
     'pdf_ready_after_submit' => 'Application submitted. You can download the PDF package anytime from this page.',
     'pdf_title' => 'Finance Application Package',
     'pdf_application_section' => 'Loan & application details',
@@ -117,7 +117,7 @@ return [
     'reentry_soon' => 'Re-entry soon',
     'draft' => [
         1 => [
-            'hint' => 'Step 1 of 3: Choose who finances the deal and which vehicles the customer wants (up to 3).',
+            'hint' => 'Step 1 of 3: Choose who finances the deal. Add vehicles only if this is a truck deal (up to 3); skip them for a loan-only application.',
         ],
         2 => [
             'hint' => 'Step 2 of 3: Pick the financial product and enter prices, down payment, and loan amount.',
